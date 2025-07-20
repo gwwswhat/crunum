@@ -57,14 +57,14 @@ struct Vector* vector_mul_matrix(struct Vector* vector, struct Matrix* matrix){
 	return result;
 }
 
-struct Vector* vector_sum(struct Vector* vector1, struct Vector* vector2){
+struct Vector* vector_add(struct Vector* vector1, struct Vector* vector2){
 	struct Vector* result = vector_init(vector1->len);
 	for(uint i = 0; i < vector1->len; i++)
 		result->values[i] = vector1->values[i] + vector2->values[i];
 	return result;
 }
 
-struct Vector* vector_sum_scalar(struct Vector* vector, double scalar){
+struct Vector* vector_add_scalar(struct Vector* vector, double scalar){
 	struct Vector* result = vector_init(vector->len);
 	for(uint i = 0; i < vector->len; i++)
 		result->values[i] = vector->values[i] + scalar;
@@ -202,19 +202,19 @@ static int l_vector_mul(lua_State* lua){
 	return 0;
 }
 
-static int l_vector_sum(lua_State* lua){
+static int l_vector_add(lua_State* lua){
 	struct Vector** vector1 = luaL_checkudata(lua, 1, "CrunumVector");
 	struct Vector** vector2 = luaL_testudata(lua, 2, "CrunumVector");
 	if(vector2){
 		struct Vector** result = lua_newuserdata(lua, sizeof(struct Vector*));
-		*result = vector_sum(*vector1, *vector2);
+		*result = vector_add(*vector1, *vector2);
 		luaL_getmetatable(lua, "CrunumVector");
 		lua_setmetatable(lua, -2);
 		return 1;
 	}
 	if(lua_type(lua, 2) == LUA_TNUMBER){
 		struct Vector** result = lua_newuserdata(lua, sizeof(struct Vector*));
-		*result = vector_sum_scalar(*vector1, luaL_checknumber(lua, 2));
+		*result = vector_add_scalar(*vector1, luaL_checknumber(lua, 2));
 		luaL_getmetatable(lua, "CrunumVector");
 		lua_setmetatable(lua, -2);
 		return 1;
@@ -237,6 +237,6 @@ const luaL_Reg vector_methods[] = {
 	{"__gc", l_vector_gc},
 	{"__tostring", l_vector_tostring},
 	{"__mul", l_vector_mul},
-	{"__add", l_vector_sum},
+	{"__add", l_vector_add},
 	{NULL, NULL}
 };

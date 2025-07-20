@@ -26,6 +26,14 @@ print(mat4)
 print(mat4:rows())
 print(mat4:cols())
 
-mat2[1][1] = 2.0
+mat2:set(1, 1, 2.0)
 
 print("Matrix 2: ", mat2)
+
+mat4:reshape(10, 10)
+
+print("Reshape: ", mat4)
+
+mat3:add_vector_as_row(crunum.vector.randinit(mat3:cols()))
+
+print(mat3)

@@ -28,6 +28,26 @@ void matrix_free(struct Matrix* matrix){
 	free(matrix);
 }
 
+void matrix_add_vector_as_row(struct Matrix* matrix, struct Vector* vector){
+	matrix->rows++;
+	matrix->values = realloc(matrix->values, matrix->rows * matrix->cols *
+			sizeof(double));
+	for(uint i = 0; i < matrix->cols; i++)
+		matrix_set(matrix, matrix->rows - 1, i, vector->values[i]);
+}
+
+void matrix_add_vector_as_col(struct Matrix* matrix, struct Vector* vector){
+	matrix->cols++;
+	double* new_values = malloc(matrix->rows * matrix->cols * sizeof(double));
+	for(uint i = 0; i < matrix->rows; i++){
+		for(uint j = 0; j < matrix->cols - 1; j++)
+			new_values[i * matrix->cols + j] = matrix_get(matrix, i, j);
+		new_values[i * matrix->cols + matrix->cols - 1] = vector->values[i];
+	}
+	free(matrix->values);
+	matrix->values = new_values;
+}
+
 struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2){
 	struct Matrix* result = matrix_init(matrix1->rows, matrix2->cols);
 	for(uint i = 0; i < matrix1->rows; i++)
@@ -56,14 +76,14 @@ struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector){
 	return result;
 }
 
-struct Matrix* matrix_sum(struct Matrix* matrix1, struct Matrix* matrix2){
+struct Matrix* matrix_add(struct Matrix* matrix1, struct Matrix* matrix2){
 	struct Matrix* result = matrix_init(matrix1->rows, matrix1->cols);
 	for(uint i = 0; i < matrix1->rows * matrix1->cols; i++)
 		result->values[i] = matrix1->values[i] + matrix2->values[i];
 	return result;
 }
 
-struct Matrix* matrix_sum_scalar(struct Matrix* matrix, double scalar){
+struct Matrix* matrix_add_scalar(struct Matrix* matrix, double scalar){
 	struct Matrix* result = matrix_init(matrix->rows, matrix->cols);
 	for(uint i = 0; i < matrix->rows * matrix->cols; i++)
 		result->values[i] = matrix->values[i] + scalar;
@@ -82,6 +102,13 @@ struct Vector* matrix_row(struct Matrix* matrix, uint row){
 	struct Vector* vector = vector_init(matrix->cols);
 	for(uint i = 0; i < matrix->cols; i++)
 		vector->values[i] = matrix_get(matrix, row, i);
+	return vector;
+}
+
+struct Vector* matrix_col(struct Matrix* matrix, uint col){
+	struct Vector* vector = vector_init(matrix->rows);
+	for(uint i = 0; i < matrix->rows; i++)
+		vector->values[i] = matrix_get(matrix, i, col);
 	return vector;
 }
 
@@ -141,6 +168,61 @@ static int l_matrix_from(lua_State* lua){
 	return 1;
 }
 
+static int l_matrix_get(lua_State* lua){
+	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
+	int row = luaL_checkinteger(lua, 2) - 1;
+	int col = luaL_checkinteger(lua, 3) - 1;
+	if((uint)row >= (*matrix)->rows || (uint)col >= (*matrix)->rows || 
+			row < 0 || col < 0){
+		luaL_error(lua, "Out of bound");
+		return 0;
+	}
+	lua_pushnumber(lua, matrix_get(*matrix, (uint)row, (uint)col));
+	return 1;
+}
+
+static int l_matrix_set(lua_State* lua){
+	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
+	int row = luaL_checkinteger(lua, 2) - 1;
+	int col = luaL_checkinteger(lua, 3) - 1;
+	if((uint)row >= (*matrix)->rows || (uint)col >= (*matrix)->rows || 
+			row < 0 || col < 0){
+		luaL_error(lua, "Out of bound");
+		return 0;
+	}
+	double value = luaL_checknumber(lua, 4);
+	matrix_set(*matrix, (uint)row, (uint)col, value);
+	return 0;
+}
+
+static int l_matrix_row(lua_State* lua){
+	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
+	int row = luaL_checkinteger(lua, 2) - 1;
+	if((uint)row >= (*matrix)->rows || row < 0){
+		luaL_error(lua, "Out of bound");
+		return 0;
+	}
+	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
+	*vector = matrix_row(*matrix, (uint)row);
+	luaL_getmetatable(lua, "CrunumVector");
+	lua_setmetatable(lua, -2);
+	return 1;
+}
+
+static int l_matrix_col(lua_State* lua){
+	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
+	int col = luaL_checkinteger(lua, 2) - 1;
+	if((uint)col >= (*matrix)->cols || col < 0){
+		luaL_error(lua, "Out of bound");
+		return 0;
+	}
+	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
+	*vector = matrix_col(*matrix, (uint)col);
+	luaL_getmetatable(lua, "CrunumVector");
+	lua_setmetatable(lua, -2);
+	return 1;
+}
+
 static int l_matrix_rows(lua_State* lua){
 	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
 	lua_pushinteger(lua, (*matrix)->rows);
@@ -153,28 +235,50 @@ static int l_matrix_cols(lua_State* lua){
 	return 1;
 }
 
-static int l_matrix_index(lua_State* lua){
-	int type = lua_type(lua, 2);
-	if(type == LUA_TSTRING){
-		luaL_getmetatable(lua, "CrunumMatrix");
-		lua_pushvalue(lua, 2);
-		lua_rawget(lua, -2);
-		return 1;
+static int l_matrix_transpose(lua_State* lua){
+	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+	*result = matrix_transpose(*matrix);
+	luaL_getmetatable(lua, "CrunumMatrix");
+	lua_setmetatable(lua, -2);
+	return 1;
+}
+
+static int l_matrix_reshape(lua_State* lua){
+	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
+	int new_rows = luaL_checkinteger(lua, 2);
+	int new_cols = luaL_checkinteger(lua, 3);
+	if(new_rows < 1 || new_cols < 1){
+		luaL_error(lua, "Matrix dimension must be positive integers");
+		return 0;
 	}
-	if(type == LUA_TNUMBER){
-		struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
-		int row = luaL_checkinteger(lua, 2) - 1;
-		if((uint)row >= (*matrix)->rows || row < 0){
-			luaL_error(lua, "Out of bound");
-			return 0;
-		}
-		struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
-		*vector = matrix_row(*matrix, (uint)row);
-		luaL_getmetatable(lua, "CrunumVector");
-		lua_setmetatable(lua, -2);
-		return 1;
+	if((uint)new_rows * (uint)new_cols != (*matrix)->rows * (*matrix)->cols){
+		luaL_error(lua, "New size is different with old one");
+		return 0;
 	}
-	luaL_error(lua, "Invalid __index value");
+	matrix_reshape(*matrix, (uint)new_rows, (uint)new_cols);
+	return 0;
+}
+
+static int l_matrix_add_vector_as_row(lua_State* lua){
+	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Vector** vector = luaL_checkudata(lua, 2, "CrunumVector");
+	if((*vector)->len != (*matrix)->cols){
+		luaL_error(lua, "Vector length doesn't match matrix col size");
+		return 0;
+	}
+	matrix_add_vector_as_row(*matrix, *vector);
+	return 0;
+}
+
+static int l_matrix_add_vector_as_col(lua_State* lua){
+	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Vector** vector = luaL_checkudata(lua, 2, "CrunumVector");
+	if((*vector)->len != (*matrix)->rows){
+		luaL_error(lua, "Vector length doesn't match matrix row size");
+		return 0;
+	}
+	matrix_add_vector_as_col(*matrix, *vector);
 	return 0;
 }
 
@@ -240,7 +344,7 @@ static int l_matrix_mul(lua_State* lua){
 	return 0;
 }
 
-static int l_matrix_sum(lua_State* lua){
+static int l_matrix_add(lua_State* lua){
 	struct Matrix** matrix1 = luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Matrix** matrix2 = luaL_testudata(lua, 2, "CrunumMatrix");
 	if(matrix2){
@@ -250,14 +354,14 @@ static int l_matrix_sum(lua_State* lua){
 			return 0;
 		}
 		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
-		*result = matrix_sum(*matrix1, *matrix2);
+		*result = matrix_add(*matrix1, *matrix2);
 		luaL_getmetatable(lua, "CrunumMatrix");
 		lua_setmetatable(lua, -2);
 		return 1;
 	}
 	if(lua_type(lua, 2) == LUA_TNUMBER){
 		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
-		*result = matrix_sum_scalar(*matrix1, lua_tonumber(lua, 2));
+		*result = matrix_add_scalar(*matrix1, lua_tonumber(lua, 2));
 		luaL_getmetatable(lua, "CrunumMatrix");
 		lua_setmetatable(lua, -2);
 		return 1;
@@ -274,12 +378,19 @@ const luaL_Reg matrix_functions[] = {
 };
 
 const luaL_Reg matrix_methods[] = {
+	{"get", l_matrix_get},
+	{"set", l_matrix_set},
+	{"row", l_matrix_row},
+	{"col", l_matrix_col},
 	{"rows", l_matrix_rows},
 	{"cols", l_matrix_cols},
-	{"__index", l_matrix_index},
+	{"transpose", l_matrix_transpose},
+	{"reshape", l_matrix_reshape},
+	{"add_vector_as_row", l_matrix_add_vector_as_row},
+	{"add_vector_as_col", l_matrix_add_vector_as_col},
 	{"__gc", l_matrix_gc},
 	{"__tostring", l_matrix_tostring},
 	{"__mul", l_matrix_mul},
-	{"__add", l_matrix_sum},
+	{"__add", l_matrix_add},
 	{NULL, NULL}
 };
