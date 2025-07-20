@@ -63,6 +63,13 @@ struct Matrix* matrix_sum(struct Matrix* matrix1, struct Matrix* matrix2){
 	return result;
 }
 
+struct Matrix* matrix_sum_scalar(struct Matrix* matrix, double scalar){
+	struct Matrix* result = matrix_init(matrix->rows, matrix->cols);
+	for(uint i = 0; i < matrix->rows * matrix->cols; i++)
+		result->values[i] = matrix->values[i] + scalar;
+	return result;
+}
+
 struct Matrix* matrix_transpose(struct Matrix* matrix){
 	struct Matrix* new_matrix = matrix_init(matrix->cols, matrix->rows);
 	for(uint i = 0; i < matrix->rows; i++)
@@ -71,11 +78,18 @@ struct Matrix* matrix_transpose(struct Matrix* matrix){
 	return new_matrix;
 }
 
+struct Vector* matrix_row(struct Matrix* matrix, uint row){
+	struct Vector* vector = vector_init(matrix->cols);
+	for(uint i = 0; i < matrix->cols; i++)
+		vector->values[i] = matrix_get(matrix, row, i);
+	return vector;
+}
+
 static int l_matrix_init(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);
 	int cols = luaL_checkinteger(lua, 2);
 	if(rows < 1 || cols < 1){
-		luaL_error("Matrix dimension must be positive integers");
+		luaL_error(lua, "Matrix dimension must be positive integers");
 		return 0;
 	}
 	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
@@ -89,7 +103,7 @@ static int l_matrix_randinit(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);
 	int cols = luaL_checkinteger(lua, 2);
 	if(rows < 1 || cols < 1){
-		luaL_error("Matrix dimension must be positive integers");
+		luaL_error(lua, "Matrix dimension must be positive integers");
 		return 0;
 	}
 	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
@@ -101,29 +115,29 @@ static int l_matrix_randinit(lua_State* lua){
 
 static int l_matrix_from(lua_State* lua){
 	luaL_checktype(lua, 1, LUA_TTABLE);
-	uint rows = luaL_rawlen(lua, 1);
+	uint rows = lua_rawlen(lua, 1);
 	lua_rawgeti(lua, 1, 1);
 	luaL_checktype(lua, -1, LUA_TTABLE);
-	uint cols = luaL_rawlen(lua, -1);
+	uint cols = lua_rawlen(lua, -1);
 	lua_pop(lua, 1);
 	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
 	*matrix = matrix_init(rows, cols);
-	luaL_getmetatable(lua, "CrunumMatrix");
-	lua_setmetatable(lua, -2);
 	for(uint i = 0; i < rows; i++){
 		lua_rawgeti(lua, 1, i + 1);
 		luaL_checktype(lua, -1, LUA_TTABLE);
-		if(luaL_rawlen(lua, -1) != cols){
+		if(lua_rawlen(lua, -1) != cols){
 			luaL_error(lua, "Inconsistent size");
 			return 0;
 		}
 		for(uint j = 0; j < cols; j++){
 			lua_rawgeti(lua, -1, j + 1);
-			matrix_set(*matrix, i, j, luaL_checkinteger(lua, -1));
+			matrix_set(*matrix, i, j, luaL_checknumber(lua, -1));
 			lua_pop(lua, 1);
 		}
 		lua_pop(lua, 1);
 	}	
+	luaL_getmetatable(lua, "CrunumMatrix");
+	lua_setmetatable(lua, -2);
 	return 1;
 }
 
@@ -147,10 +161,10 @@ static int l_matrix_index(lua_State* lua){
 		lua_rawget(lua, -2);
 		return 1;
 	}
-	else if(type == LUA_TNUMBER){
+	if(type == LUA_TNUMBER){
 		struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
-		int row = luaL_checkinteger(lua, 2) - 1);
-		if(row > (*matrix)->rows || row < 0){
+		int row = luaL_checkinteger(lua, 2) - 1;
+		if((uint)row >= (*matrix)->rows || row < 0){
 			luaL_error(lua, "Out of bound");
 			return 0;
 		}
@@ -179,10 +193,12 @@ static int l_matrix_tostring(lua_State* lua){
 		luaL_addstring(&buffer, "  {");
 		for(uint j = 0; j < (*matrix)->cols; j++){
 			char num[16];
-			snprintf(num, sizeof(num), "%.2lf, ", matrix_get(i, j));
+			snprintf(num, sizeof(num), "%.2lf, ", matrix_get(*matrix, i, j));
 			luaL_addstring(&buffer, num);
 		}
+		luaL_addstring(&buffer, "},\n");
 	}
+	luaL_addchar(&buffer, '}');
 	luaL_pushresult(&buffer);
 	return 1;
 }
@@ -190,7 +206,7 @@ static int l_matrix_tostring(lua_State* lua){
 static int l_matrix_mul(lua_State* lua){
 	struct Matrix** matrix1 = luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Matrix** matrix2 = luaL_testudata(lua, 2, "CrunumMatrix");
-	if(*matrix2){
+	if(matrix2){
 		if((*matrix1)->rows != (*matrix2)->cols){
 			luaL_error(lua, "Matrix row size doesn't match another matrix col size");
 			return 0;
@@ -202,7 +218,7 @@ static int l_matrix_mul(lua_State* lua){
 		return 1;
 	}
 	struct Vector** vector = luaL_testudata(lua, 2, "CrunumVector");
-	if(*vector){
+	if(vector){
 		if((*matrix1)->cols != (*vector)->len){
 			luaL_error(lua, "Matrix col size doesn't match vector length");
 			return 0;
@@ -224,10 +240,10 @@ static int l_matrix_mul(lua_State* lua){
 	return 0;
 }
 
-static int l_matrix_mul(lua_State* lua){
+static int l_matrix_sum(lua_State* lua){
 	struct Matrix** matrix1 = luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Matrix** matrix2 = luaL_testudata(lua, 2, "CrunumMatrix");
-	if(*matrix2){
+	if(matrix2){
 		if((*matrix1)->rows * (*matrix1)->cols != 
 				(*matrix2)->rows * (*matrix2)->cols){
 			luaL_error(lua, "Matrix size doesn't match another matrix size");
@@ -250,14 +266,14 @@ static int l_matrix_mul(lua_State* lua){
 	return 0;
 }
 
-static const luaL_Reg matrix_functions[] = {
+const luaL_Reg matrix_functions[] = {
 	{"init", l_matrix_init},
 	{"randinit", l_matrix_randinit},
 	{"from", l_matrix_from},
 	{NULL, NULL}
 };
 
-static const luaL_Reg matrix_methods[] = {
+const luaL_Reg matrix_methods[] = {
 	{"rows", l_matrix_rows},
 	{"cols", l_matrix_cols},
 	{"__index", l_matrix_index},

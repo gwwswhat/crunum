@@ -4,6 +4,9 @@
 #include "vector.h"
 #include "common.h"
 
+extern const luaL_Reg matrix_functions[];
+extern const luaL_Reg matrix_methods[];
+
 struct Matrix {
 	double* values;
 	uint rows;
@@ -32,5 +35,7 @@ static inline void matrix_reshape(struct Matrix* matrix,
 	matrix->rows = new_rows;
 	matrix->cols = new_cols;
 }
+
+struct Vector* matrix_row(struct Matrix* matrix, uint row);
 
 #endif
