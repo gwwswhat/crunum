@@ -34,6 +34,18 @@ mat4:reshape(10, 10)
 
 print("Reshape: ", mat4)
 
-mat3:add_vector_as_row(crunum.vector.randinit(mat3:cols()))
+mat3:addv_as_row(crunum.vector.randinit(mat3:cols()))
 
 print(mat3)
+
+vec = crunum.vector.init(0)
+
+vec:push(2)
+vec:push(5)
+vec:push(6)
+
+print(vec)
+
+vec:pop()
+
+print(vec)

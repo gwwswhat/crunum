@@ -16,8 +16,8 @@ struct Matrix {
 struct Matrix* matrix_init(uint rows, uint cols);
 struct Matrix* matrix_randinit(uint rows, uint cols);
 void matrix_free(struct Matrix* matrix);
-void matrix_add_vector_as_row(struct Matrix* matrix, struct Vector* vector);
-void matrix_add_vector_as_col(struct Matrix* matrix, struct Vector* vector);
+void matrix_addv_as_row(struct Matrix* matrix, struct Vector* vector);
+void matrix_addv_as_col(struct Matrix* matrix, struct Vector* vector);
 static inline double matrix_get(struct Matrix* matrix, uint row, uint col){
 	return matrix->values[row * matrix->cols + col];
 }

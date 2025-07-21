@@ -34,6 +34,11 @@ void vector_free(struct Vector* vector){
 	free(vector);
 }
 
+void vector_push(struct Vector* vector, double value){
+	vector->values = realloc(vector->values, ++vector->len * sizeof(double));
+	vector->values[vector->len - 1] = value;
+}
+
 struct Vector* vector_mul(struct Vector* vector1, struct Vector* vector2){
 	struct Vector* result = vector_init(vector1->len);
 	for(uint i = 0; i < vector1->len; i++)
@@ -73,8 +78,8 @@ struct Vector* vector_add_scalar(struct Vector* vector, double scalar){
 
 static int l_vector_init(lua_State* lua){
 	int len = luaL_checkinteger(lua, 1);
-	if(len < 1){
-		luaL_error(lua, "Vector length must be a positive integer");
+	if(len < 0){
+		luaL_error(lua, "Vector length can't be negative");
 		return 0;
 	}
 	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
@@ -86,8 +91,8 @@ static int l_vector_init(lua_State* lua){
 
 static int l_vector_randinit(lua_State* lua){
 	int len = luaL_checkinteger(lua, 1);
-	if(len < 1){
-		luaL_error(lua, "Vector length must be a positive integer");
+	if(len < 0){
+		luaL_error(lua, "Vector length can't be negative");
 		return 0;
 	}
 	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
@@ -115,6 +120,23 @@ static int l_vector_from(lua_State* lua){
 static int l_vector_len(lua_State* lua){
 	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
 	lua_pushinteger(lua, (*vector)->len);
+	return 1;
+}
+
+static int l_vector_push(lua_State* lua){
+	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
+	double value = luaL_checknumber(lua, 2);
+	vector_push(*vector, value);
+	return 0;
+}
+
+static int l_vector_pop(lua_State* lua){
+	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
+	if(!(*vector)->len){
+		luaL_error(lua, "Empty vector");
+		return 0;
+	}
+	lua_pushnumber(lua, vector_pop(*vector));
 	return 1;
 }
 
@@ -232,6 +254,8 @@ const luaL_Reg vector_functions[] = {
 
 const luaL_Reg vector_methods[] = {
 	{"len", l_vector_len},
+	{"push", l_vector_push},
+	{"pop", l_vector_pop},
 	{"__index", l_vector_index},
 	{"__newindex", l_vector_newindex},
 	{"__gc", l_vector_gc},

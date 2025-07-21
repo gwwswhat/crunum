@@ -28,7 +28,7 @@ void matrix_free(struct Matrix* matrix){
 	free(matrix);
 }
 
-void matrix_add_vector_as_row(struct Matrix* matrix, struct Vector* vector){
+void matrix_addv_as_row(struct Matrix* matrix, struct Vector* vector){
 	matrix->rows++;
 	matrix->values = realloc(matrix->values, matrix->rows * matrix->cols *
 			sizeof(double));
@@ -36,7 +36,7 @@ void matrix_add_vector_as_row(struct Matrix* matrix, struct Vector* vector){
 		matrix_set(matrix, matrix->rows - 1, i, vector->values[i]);
 }
 
-void matrix_add_vector_as_col(struct Matrix* matrix, struct Vector* vector){
+void matrix_addv_as_col(struct Matrix* matrix, struct Vector* vector){
 	matrix->cols++;
 	double* new_values = malloc(matrix->rows * matrix->cols * sizeof(double));
 	for(uint i = 0; i < matrix->rows; i++){
@@ -115,8 +115,8 @@ struct Vector* matrix_col(struct Matrix* matrix, uint col){
 static int l_matrix_init(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);
 	int cols = luaL_checkinteger(lua, 2);
-	if(rows < 1 || cols < 1){
-		luaL_error(lua, "Matrix dimension must be positive integers");
+	if(rows < 0 || cols < 0){
+		luaL_error(lua, "Matrix dimension can't be negative");
 		return 0;
 	}
 	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
@@ -129,8 +129,8 @@ static int l_matrix_init(lua_State* lua){
 static int l_matrix_randinit(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);
 	int cols = luaL_checkinteger(lua, 2);
-	if(rows < 1 || cols < 1){
-		luaL_error(lua, "Matrix dimension must be positive integers");
+	if(rows < 0 || cols < 0){
+		luaL_error(lua, "Matrix dimension can't be negative");
 		return 0;
 	}
 	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
@@ -248,8 +248,8 @@ static int l_matrix_reshape(lua_State* lua){
 	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
 	int new_rows = luaL_checkinteger(lua, 2);
 	int new_cols = luaL_checkinteger(lua, 3);
-	if(new_rows < 1 || new_cols < 1){
-		luaL_error(lua, "Matrix dimension must be positive integers");
+	if(new_rows < 0 || new_cols < 0){
+		luaL_error(lua, "Matrix dimension can't be negative");
 		return 0;
 	}
 	if((uint)new_rows * (uint)new_cols != (*matrix)->rows * (*matrix)->cols){
@@ -260,25 +260,25 @@ static int l_matrix_reshape(lua_State* lua){
 	return 0;
 }
 
-static int l_matrix_add_vector_as_row(lua_State* lua){
+static int l_matrix_addv_as_row(lua_State* lua){
 	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Vector** vector = luaL_checkudata(lua, 2, "CrunumVector");
 	if((*vector)->len != (*matrix)->cols){
 		luaL_error(lua, "Vector length doesn't match matrix col size");
 		return 0;
 	}
-	matrix_add_vector_as_row(*matrix, *vector);
+	matrix_addv_as_row(*matrix, *vector);
 	return 0;
 }
 
-static int l_matrix_add_vector_as_col(lua_State* lua){
+static int l_matrix_addv_as_col(lua_State* lua){
 	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Vector** vector = luaL_checkudata(lua, 2, "CrunumVector");
 	if((*vector)->len != (*matrix)->rows){
 		luaL_error(lua, "Vector length doesn't match matrix row size");
 		return 0;
 	}
-	matrix_add_vector_as_col(*matrix, *vector);
+	matrix_addv_as_col(*matrix, *vector);
 	return 0;
 }
 
@@ -386,8 +386,8 @@ const luaL_Reg matrix_methods[] = {
 	{"cols", l_matrix_cols},
 	{"transpose", l_matrix_transpose},
 	{"reshape", l_matrix_reshape},
-	{"add_vector_as_row", l_matrix_add_vector_as_row},
-	{"add_vector_as_col", l_matrix_add_vector_as_col},
+	{"addv_as_row", l_matrix_addv_as_row},
+	{"addv_as_col", l_matrix_addv_as_col},
 	{"__gc", l_matrix_gc},
 	{"__tostring", l_matrix_tostring},
 	{"__mul", l_matrix_mul},
