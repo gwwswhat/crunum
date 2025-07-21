@@ -125,25 +125,25 @@ static int l_vector_from(lua_State* lua){
 }
 
 static int l_vector_len(lua_State* lua){
-	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
-	lua_pushinteger(lua, (*vector)->len);
+	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	lua_pushinteger(lua, vector->len);
 	return 1;
 }
 
 static int l_vector_push(lua_State* lua){
-	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
 	double value = luaL_checknumber(lua, 2);
-	vector_push(*vector, value);
+	vector_push(vector, value);
 	return 0;
 }
 
 static int l_vector_pop(lua_State* lua){
-	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
-	if(!(*vector)->len){
+	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	if(!vector->len){
 		luaL_error(lua, "Empty vector");
 		return 0;
 	}
-	lua_pushnumber(lua, vector_pop(*vector));
+	lua_pushnumber(lua, vector_pop(vector));
 	return 1;
 }
 
@@ -156,13 +156,13 @@ static int l_vector_index(lua_State* lua){
 		return 1;
 	}
 	if(type == LUA_TNUMBER){
-		struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
+		struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
 		int index = luaL_checkinteger(lua, 2) - 1;
-		if((uint)index > (*vector)->len || index < 0){
+		if((uint)index > vector->len || index < 0){
 			luaL_error(lua, "Out of bound");
 			return 0;
 		}
-		lua_pushnumber(lua, (*vector)->values[index]);
+		lua_pushnumber(lua, vector->values[index]);
 		return 1;
 	}
 	luaL_error(lua, "Invalid __index value");
@@ -170,31 +170,31 @@ static int l_vector_index(lua_State* lua){
 }
 
 static int l_vector_newindex(lua_State* lua){
-	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
 	int index = luaL_checkinteger(lua, 2) - 1;
-	if((uint)index >= (*vector)->len || index < 0){
+	if((uint)index >= vector->len || index < 0){
 		luaL_error(lua, "Out of bound");
 		return 0;
 	}
 	double value = luaL_checknumber(lua, 3);
-	(*vector)->values[index] = value;
+	vector->values[index] = value;
 	return 0;
 }
 
 static int l_vector_gc(lua_State* lua){
-	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
-	vector_free(*vector);
+	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	vector_free(vector);
 	return 1;
 }
 
 static int l_vector_tostring(lua_State* lua){
-	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
 	luaL_Buffer buffer;
-	luaL_buffnew(lua, &buffer);
+	luaL_buffinit(lua, &buffer);
 	luaL_addchar(&buffer, '{');
-	for(uint i = 0; i < (*vector)->len; i++){
+	for(uint i = 0; i < vector->len; i++){
 		char num[16];
-		snprintf(num, sizeof(num), "%.2lf, ", (*vector)->values[i]);
+		snprintf(num, sizeof(num), "%.2lf, ", vector->values[i]);
 		luaL_addstring(&buffer, num);
 	}
 	luaL_addchar(&buffer, '}');
@@ -203,11 +203,11 @@ static int l_vector_tostring(lua_State* lua){
 }
 
 static int l_vector_mul(lua_State* lua){
-	struct Vector** vector1 = luaL_checkudata(lua, 1, "CrunumVector");
-	struct Vector** vector2 = luaL_testudata(lua, 2, "CrunumVector");
+	struct Vector* vector1 = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector2 = *(struct Vector**)luaL_testudata(lua, 2, "CrunumVector");
 	if(vector2){
 		struct Vector** result = lua_newuserdata(lua, sizeof(struct Vector*));
-		*result = vector_mul(*vector1, *vector2);
+		*result = vector_mul(vector1, vector2);
 		luaL_getmetatable(lua, "CrunumVector");
 		lua_setmetatable(lua, -2);
 		return 1;
@@ -215,14 +215,14 @@ static int l_vector_mul(lua_State* lua){
 	struct Matrix** matrix = luaL_testudata(lua, 2, "CrunumMatrix");
 	if(matrix){
 		struct Vector** result = lua_newuserdata(lua, sizeof(struct Vector*));
-		*result = matrix_mul_vector(*matrix, *vector1);
+		*result = matrix_mul_vector(*matrix, vector1);
 		luaL_getmetatable(lua, "CrunumVector");
 		lua_setmetatable(lua, -2);
 		return 1;
 	}
 	if(lua_type(lua, 2) == LUA_TNUMBER){
 		struct Vector** result = lua_newuserdata(lua, sizeof(struct Vector*));
-		*result = vector_mul_scalar(*vector1, luaL_checknumber(lua, 2));
+		*result = vector_mul_scalar(vector1, luaL_checknumber(lua, 2));
 		luaL_getmetatable(lua, "CrunumVector");
 		lua_setmetatable(lua, -2);
 		return 1;
@@ -232,18 +232,18 @@ static int l_vector_mul(lua_State* lua){
 }
 
 static int l_vector_add(lua_State* lua){
-	struct Vector** vector1 = luaL_checkudata(lua, 1, "CrunumVector");
-	struct Vector** vector2 = luaL_testudata(lua, 2, "CrunumVector");
+	struct Vector* vector1 = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector2 = *(struct Vector**)luaL_testudata(lua, 2, "CrunumVector");
 	if(vector2){
 		struct Vector** result = lua_newuserdata(lua, sizeof(struct Vector*));
-		*result = vector_add(*vector1, *vector2);
+		*result = vector_add(vector1, vector2);
 		luaL_getmetatable(lua, "CrunumVector");
 		lua_setmetatable(lua, -2);
 		return 1;
 	}
 	if(lua_type(lua, 2) == LUA_TNUMBER){
 		struct Vector** result = lua_newuserdata(lua, sizeof(struct Vector*));
-		*result = vector_add_scalar(*vector1, luaL_checknumber(lua, 2));
+		*result = vector_add_scalar(vector1, luaL_checknumber(lua, 2));
 		luaL_getmetatable(lua, "CrunumVector");
 		lua_setmetatable(lua, -2);
 		return 1;

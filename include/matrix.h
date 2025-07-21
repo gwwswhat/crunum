@@ -16,8 +16,15 @@ struct Matrix {
 struct Matrix* matrix_new(uint rows, uint cols);
 struct Matrix* matrix_randinit(uint rows, uint cols);
 void matrix_free(struct Matrix* matrix);
-void matrix_addv_as_row(struct Matrix* matrix, struct Vector* vector);
-void matrix_addv_as_col(struct Matrix* matrix, struct Vector* vector);
+struct Vector* matrix_row(struct Matrix* matrix, uint row);
+struct Vector* matrix_col(struct Matrix* matrix, uint col);
+void matrix_push_row(struct Matrix* matrix, struct Vector* vector);
+void matrix_push_col(struct Matrix* matrix, struct Vector* vector);
+static inline struct Vector* matrix_pop_row(struct Matrix* matrix){
+	return matrix_row(matrix, --matrix->rows);
+}
+
+struct Vector* matrix_pop_col(struct Matrix* matrix);
 static inline double matrix_get(struct Matrix* matrix, uint row, uint col){
 	return matrix->values[row * matrix->cols + col];
 }
@@ -37,8 +44,5 @@ static inline void matrix_reshape(struct Matrix* matrix,
 	matrix->rows = new_rows;
 	matrix->cols = new_cols;
 }
-
-struct Vector* matrix_row(struct Matrix* matrix, uint row);
-struct Vector* matrix_col(struct Matrix* matrix, uint col);
 
 #endif

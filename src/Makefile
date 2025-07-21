@@ -8,6 +8,8 @@ PREFIX ?= /usr/local
 
 LIBDIR := $(PREFIX)/lib
 
+LUALIB := $(LIBDIR)/lua/5.4
+
 OBJ := vector.o \
 			 matrix.o \
 			 crunum.o
@@ -19,8 +21,8 @@ clean:
 	rm -f $(OBJ)
 
 install: $(LIBRARY).so
-	@mkdir -p $(LIBDIR)
-	cp $< $(LIBDIR)
+	@mkdir -p $(LUALIB)
+	cp $< $(LUALIB)
 
 uninstall:
 	rm -f $(LIBDIR)/$(LIBRARY).so

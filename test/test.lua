@@ -34,11 +34,11 @@ mat4:reshape(10, 10)
 
 print("Reshape: ", mat4)
 
-mat3:addv_as_row(crunum.vector.randinit(mat3:cols()))
+mat3:push_row(crunum.vector.randinit(mat3:cols()))
 
 print(mat3)
 
-vec = crunum.vector.new(0)
+local vec = crunum.vector.new(0)
 
 vec:push(2)
 vec:push(5)
@@ -49,3 +49,13 @@ print(vec)
 print("Last number: ", vec:pop())
 
 print(vec)
+
+local mat = crunum.matrix.new(0, 0)
+
+mat:push_row(crunum.vector.from({3, 3, 3}))
+
+print(mat)
+
+mat:pop_row()
+
+print(mat)
