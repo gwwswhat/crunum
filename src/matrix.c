@@ -1,3 +1,10 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0
+ * Copyright (C) 2025 Vgwws
+ *
+ * This file is licensed under GPL-3.0. See LICENSE for details.
+ */
+
 #include <stdlib.h>
 #include <lua5.4/lua.h>
 #include <lua5.4/lauxlib.h>
