@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include <time.h>
 #include <lua5.4/lua.h>
 #include <lua5.4/lauxlib.h>
 #include <lua5.4/lualib.h>
@@ -21,6 +22,7 @@ struct Matrix* matrix_new(uint rows, uint cols){
 }
 
 struct Matrix* matrix_randinit(uint rows, uint cols){
+	srand(time(NULL));
 	struct Matrix* matrix = malloc(sizeof(struct Matrix));
 	matrix->rows = rows;
 	matrix->cols = cols;

@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include <time.h>
 #include <lua5.4/lua.h>
 #include <lua5.4/lauxlib.h>
 #include <lua5.4/lualib.h>
@@ -21,6 +22,7 @@ struct Vector* vector_new(uint len){
 }
 
 struct Vector* vector_randinit(uint len){
+	srand(time(NULL));
 	struct Vector* vector = malloc(sizeof(struct Vector));
 	vector->len = len;
 	vector->values = malloc(len * sizeof(double));

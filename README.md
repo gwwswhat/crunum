@@ -2,7 +2,9 @@
 ## What is Crunum?
 Crunum(which stand for "Crunching number") is a library for Matrix and Vector,
 
-It only support Lua, for now.
+It only supports Lua, for now.
+
+Purpose? For fun
 ## How to install it
 Clone this repository
 ```bash
