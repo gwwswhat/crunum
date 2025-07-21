@@ -13,7 +13,7 @@
 #include "matrix.h"
 #include "vector.h"
 
-struct Vector* vector_init(uint len){
+struct Vector* vector_new(uint len){
 	struct Vector* vector = malloc(sizeof(struct Vector));
 	vector->len = len;
 	vector->values = calloc(1, len * sizeof(double));
@@ -30,7 +30,7 @@ struct Vector* vector_randinit(uint len){
 }
 
 struct Vector* vector_from_matrix(struct Matrix* matrix){
-	struct Vector* vector = vector_init(matrix->cols);
+	struct Vector* vector = vector_new(matrix->cols);
 	for(uint i = 0; i < vector->len; i++)
 		vector->values[i] = matrix->values[i];
 	return vector;
@@ -47,21 +47,21 @@ void vector_push(struct Vector* vector, double value){
 }
 
 struct Vector* vector_mul(struct Vector* vector1, struct Vector* vector2){
-	struct Vector* result = vector_init(vector1->len);
+	struct Vector* result = vector_new(vector1->len);
 	for(uint i = 0; i < vector1->len; i++)
 		result->values[i] = vector1->values[i] * vector2->values[i];
 	return result;
 }
 
 struct Vector* vector_mul_scalar(struct Vector* vector, double scalar){
-	struct Vector* result = vector_init(vector->len);
+	struct Vector* result = vector_new(vector->len);
 	for(uint i = 0; i < vector->len; i++)
 		result->values[i] = vector->values[i] * scalar;
 	return result;
 }
 
 struct Vector* vector_mul_matrix(struct Vector* vector, struct Matrix* matrix){
-	struct Vector* result = vector_init(vector->len);
+	struct Vector* result = vector_new(vector->len);
 	for(uint i = 0; i < vector->len; i++)
 		for(uint j = 0; j < matrix->cols; j++)
 			for(uint k = 0; k < matrix->rows; k++)
@@ -70,27 +70,27 @@ struct Vector* vector_mul_matrix(struct Vector* vector, struct Matrix* matrix){
 }
 
 struct Vector* vector_add(struct Vector* vector1, struct Vector* vector2){
-	struct Vector* result = vector_init(vector1->len);
+	struct Vector* result = vector_new(vector1->len);
 	for(uint i = 0; i < vector1->len; i++)
 		result->values[i] = vector1->values[i] + vector2->values[i];
 	return result;
 }
 
 struct Vector* vector_add_scalar(struct Vector* vector, double scalar){
-	struct Vector* result = vector_init(vector->len);
+	struct Vector* result = vector_new(vector->len);
 	for(uint i = 0; i < vector->len; i++)
 		result->values[i] = vector->values[i] + scalar;
 	return result;
 }
 
-static int l_vector_init(lua_State* lua){
+static int l_vector_new(lua_State* lua){
 	int len = luaL_checkinteger(lua, 1);
 	if(len < 0){
 		luaL_error(lua, "Vector length can't be negative");
 		return 0;
 	}
 	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
-	*vector = vector_init((uint)len);
+	*vector = vector_new((uint)len);
 	luaL_getmetatable(lua, "CrunumVector");
 	lua_setmetatable(lua, -2);
 	return 1;
@@ -113,7 +113,7 @@ static int l_vector_from(lua_State* lua){
 	luaL_checktype(lua, 1, LUA_TTABLE);
 	uint len = lua_rawlen(lua, 1);
 	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
-	*vector = vector_init(len);
+	*vector = vector_new(len);
 	luaL_getmetatable(lua, "CrunumVector");
 	lua_setmetatable(lua, -2);
 	for(uint i = 0; i < len; i++){
@@ -190,7 +190,7 @@ static int l_vector_gc(lua_State* lua){
 static int l_vector_tostring(lua_State* lua){
 	struct Vector** vector = luaL_checkudata(lua, 1, "CrunumVector");
 	luaL_Buffer buffer;
-	luaL_buffinit(lua, &buffer);
+	luaL_buffnew(lua, &buffer);
 	luaL_addchar(&buffer, '{');
 	for(uint i = 0; i < (*vector)->len; i++){
 		char num[16];
@@ -253,7 +253,7 @@ static int l_vector_add(lua_State* lua){
 }
 
 const luaL_Reg vector_functions[] = {
-	{"init", l_vector_init},
+	{"new", l_vector_new},
 	{"randinit", l_vector_randinit},
 	{"from", l_vector_from},
 	{NULL, NULL}

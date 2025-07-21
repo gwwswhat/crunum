@@ -19,7 +19,7 @@ print(mat2)
 
 print(mat3)
 
-local mat4 = crunum.matrix.randinit(1, 100, 30.0, 100.0)
+local mat4 = crunum.matrix.randinit(1, 100)
 
 print(mat4)
 
@@ -38,7 +38,7 @@ mat3:addv_as_row(crunum.vector.randinit(mat3:cols()))
 
 print(mat3)
 
-vec = crunum.vector.init(0)
+vec = crunum.vector.new(0)
 
 vec:push(2)
 vec:push(5)
@@ -46,6 +46,6 @@ vec:push(6)
 
 print(vec)
 
-vec:pop()
+print("Last number: ", vec:pop())
 
 print(vec)

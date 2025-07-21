@@ -12,7 +12,7 @@
 
 #include "matrix.h"
 
-struct Matrix* matrix_init(uint rows, uint cols){
+struct Matrix* matrix_new(uint rows, uint cols){
 	struct Matrix* matrix = malloc(sizeof(struct Matrix));
 	matrix->rows = rows;
 	matrix->cols = cols;
@@ -56,7 +56,7 @@ void matrix_addv_as_col(struct Matrix* matrix, struct Vector* vector){
 }
 
 struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2){
-	struct Matrix* result = matrix_init(matrix1->rows, matrix2->cols);
+	struct Matrix* result = matrix_new(matrix1->rows, matrix2->cols);
 	for(uint i = 0; i < matrix1->rows; i++)
 		for(uint j = 0; j < matrix2->cols; j++){
 			double sum = 0;
@@ -68,14 +68,14 @@ struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2){
 }
 
 struct Matrix* matrix_mul_scalar(struct Matrix* matrix, double scalar){
-	struct Matrix* result = matrix_init(matrix->rows, matrix->cols);
+	struct Matrix* result = matrix_new(matrix->rows, matrix->cols);
 	for(uint i = 0; i < result->rows * result->cols; i++)
 		result->values[i] = matrix->values[i] * scalar;
 	return result;
 }
 
 struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector){
-	struct Vector* result = vector_init(vector->len);
+	struct Vector* result = vector_new(vector->len);
 	for(uint i = 0; i < matrix->rows; i++)
 		for(uint j = 0; j < vector->len; j++)
 			for(uint k = 0; k < matrix->cols; k++)
@@ -84,21 +84,21 @@ struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector){
 }
 
 struct Matrix* matrix_add(struct Matrix* matrix1, struct Matrix* matrix2){
-	struct Matrix* result = matrix_init(matrix1->rows, matrix1->cols);
+	struct Matrix* result = matrix_new(matrix1->rows, matrix1->cols);
 	for(uint i = 0; i < matrix1->rows * matrix1->cols; i++)
 		result->values[i] = matrix1->values[i] + matrix2->values[i];
 	return result;
 }
 
 struct Matrix* matrix_add_scalar(struct Matrix* matrix, double scalar){
-	struct Matrix* result = matrix_init(matrix->rows, matrix->cols);
+	struct Matrix* result = matrix_new(matrix->rows, matrix->cols);
 	for(uint i = 0; i < matrix->rows * matrix->cols; i++)
 		result->values[i] = matrix->values[i] + scalar;
 	return result;
 }
 
 struct Matrix* matrix_transpose(struct Matrix* matrix){
-	struct Matrix* new_matrix = matrix_init(matrix->cols, matrix->rows);
+	struct Matrix* new_matrix = matrix_new(matrix->cols, matrix->rows);
 	for(uint i = 0; i < matrix->rows; i++)
 		for(uint j = i + 1; j < matrix->cols; j++)
 			matrix_set(new_matrix, j, i, matrix_get(matrix, i, j));
@@ -106,20 +106,20 @@ struct Matrix* matrix_transpose(struct Matrix* matrix){
 }
 
 struct Vector* matrix_row(struct Matrix* matrix, uint row){
-	struct Vector* vector = vector_init(matrix->cols);
+	struct Vector* vector = vector_new(matrix->cols);
 	for(uint i = 0; i < matrix->cols; i++)
 		vector->values[i] = matrix_get(matrix, row, i);
 	return vector;
 }
 
 struct Vector* matrix_col(struct Matrix* matrix, uint col){
-	struct Vector* vector = vector_init(matrix->rows);
+	struct Vector* vector = vector_new(matrix->rows);
 	for(uint i = 0; i < matrix->rows; i++)
 		vector->values[i] = matrix_get(matrix, i, col);
 	return vector;
 }
 
-static int l_matrix_init(lua_State* lua){
+static int l_matrix_new(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);
 	int cols = luaL_checkinteger(lua, 2);
 	if(rows < 0 || cols < 0){
@@ -127,7 +127,7 @@ static int l_matrix_init(lua_State* lua){
 		return 0;
 	}
 	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
-	*matrix = matrix_init((uint)rows, (uint)cols);
+	*matrix = matrix_new((uint)rows, (uint)cols);
 	luaL_getmetatable(lua, "CrunumMatrix");
 	lua_setmetatable(lua, -2);
 	return 1;
@@ -155,7 +155,7 @@ static int l_matrix_from(lua_State* lua){
 	uint cols = lua_rawlen(lua, -1);
 	lua_pop(lua, 1);
 	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
-	*matrix = matrix_init(rows, cols);
+	*matrix = matrix_new(rows, cols);
 	for(uint i = 0; i < rows; i++){
 		lua_rawgeti(lua, 1, i + 1);
 		luaL_checktype(lua, -1, LUA_TTABLE);
@@ -298,7 +298,7 @@ static int l_matrix_gc(lua_State* lua){
 static int l_matrix_tostring(lua_State* lua){
 	struct Matrix** matrix = luaL_checkudata(lua, 1, "CrunumMatrix");
 	luaL_Buffer buffer;
-	luaL_buffinit(lua, &buffer);
+	luaL_buffnew(lua, &buffer);
 	luaL_addstring(&buffer, "{\n");
 	for(uint i = 0; i < (*matrix)->rows; i++){
 		luaL_addstring(&buffer, "  {");
@@ -378,7 +378,7 @@ static int l_matrix_add(lua_State* lua){
 }
 
 const luaL_Reg matrix_functions[] = {
-	{"init", l_matrix_init},
+	{"new", l_matrix_new},
 	{"randinit", l_matrix_randinit},
 	{"from", l_matrix_from},
 	{NULL, NULL}

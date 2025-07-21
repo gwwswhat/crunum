@@ -15,7 +15,7 @@ struct Vector {
 	uint len;
 };
 
-struct Vector* vector_init(uint len);
+struct Vector* vector_new(uint len);
 struct Vector* vector_randinit(uint len);
 struct Vector* vector_from_matrix(struct Matrix* matrix);
 void vector_free(struct Vector* vector);

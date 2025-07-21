@@ -13,7 +13,7 @@ struct Matrix {
 	uint cols;
 };
 
-struct Matrix* matrix_init(uint rows, uint cols);
+struct Matrix* matrix_new(uint rows, uint cols);
 struct Matrix* matrix_randinit(uint rows, uint cols);
 void matrix_free(struct Matrix* matrix);
 void matrix_addv_as_row(struct Matrix* matrix, struct Vector* vector);
