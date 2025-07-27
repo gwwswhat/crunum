@@ -17,6 +17,7 @@
 struct Vector* vector_new(uint len){
 	struct Vector* vector = malloc(sizeof(struct Vector));
 	vector->len = len;
+	vector->cap = len;
 	vector->values = calloc(1, len * sizeof(double));
 	return vector;
 }
@@ -25,6 +26,7 @@ struct Vector* vector_randinit(uint len){
 	srand(time(NULL));
 	struct Vector* vector = malloc(sizeof(struct Vector));
 	vector->len = len;
+	vector->cap = len;
 	vector->values = malloc(len * sizeof(double));
 	for(uint i = 0; i < len; i++)
 		vector->values[i] = (double)rand() / (double)RAND_MAX;
@@ -44,7 +46,10 @@ void vector_free(struct Vector* vector){
 }
 
 void vector_push(struct Vector* vector, double value){
-	vector->values = realloc(vector->values, ++vector->len * sizeof(double));
+	if(++vector->len > vector->cap){
+		vector->cap = vector->cap ? vector->cap * 2 : 2;
+		vector->values = realloc(vector->values, vector->cap * sizeof(double));
+	}
 	vector->values[vector->len - 1] = value;
 }
 

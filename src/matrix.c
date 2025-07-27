@@ -17,6 +17,8 @@ struct Matrix* matrix_new(uint rows, uint cols){
 	struct Matrix* matrix = malloc(sizeof(struct Matrix));
 	matrix->rows = rows;
 	matrix->cols = cols;
+	matrix->rows_cap = rows;
+	matrix->cols_cap = cols;
 	matrix->values = calloc(1, rows * cols * sizeof(double));
 	return matrix;
 }
@@ -26,6 +28,8 @@ struct Matrix* matrix_randinit(uint rows, uint cols){
 	struct Matrix* matrix = malloc(sizeof(struct Matrix));
 	matrix->rows = rows;
 	matrix->cols = cols;
+	matrix->rows_cap = rows;
+	matrix->cols_cap = cols;
 	matrix->values = malloc(rows * cols * sizeof(double));
 	for(uint i = 0; i < rows * cols; i++)
 		matrix->values[i] = (double)rand() / (double)RAND_MAX;
@@ -52,16 +56,20 @@ struct Vector* matrix_col(struct Matrix* matrix, uint col){
 }
 
 void matrix_push_row(struct Matrix* matrix, struct Vector* vector){
-	matrix->rows++;
-	matrix->values = realloc(matrix->values, matrix->rows * matrix->cols *
-			sizeof(double));
+	if(++matrix->rows > matrix->rows_cap){
+		matrix->rows_cap = matrix->rows_cap ? matrix->rows_cap * 2 : 2;
+		matrix->values = realloc(matrix->values, matrix->rows_cap * 
+			matrix->cols_cap * sizeof(double));
+	}
 	for(uint i = 0; i < matrix->cols; i++)
 		matrix_set(matrix, matrix->rows - 1, i, vector->values[i]);
 }
 
 void matrix_push_col(struct Matrix* matrix, struct Vector* vector){
-	matrix->cols++;
-	double* new_values = malloc(matrix->rows * matrix->cols * sizeof(double));
+	if(++matrix->cols > matrix->cols_cap)
+		matrix->cols_cap = matrix->cols_cap ? matrix->cols_cap * 2 : 2;
+	double* new_values = malloc(matrix->rows * matrix->cols_cap * 
+			sizeof(double));
 	for(uint i = 0; i < matrix->rows; i++){
 		for(uint j = 0; j < matrix->cols - 1; j++)
 			new_values[i * matrix->cols + j] = matrix_get(matrix, i, j);
@@ -283,6 +291,7 @@ static int l_matrix_push_row(lua_State* lua){
 	struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
 	matrix->cols = matrix->cols ? matrix->cols : vector->len;
+	matrix->cols_cap = matrix->cols_cap ? matrix->cols_cap : vector->len;
 	if(vector->len != matrix->cols){
 		luaL_error(lua, "Vector length doesn't match matrix col size");
 		return 0;
@@ -295,6 +304,7 @@ static int l_matrix_push_col(lua_State* lua){
 	struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
 	matrix->rows = matrix->rows ? matrix->rows : vector->len;
+	matrix->rows_cap = matrix->rows_cap ? matrix->rows_cap : vector->len;
 	if(vector->len != matrix->rows){
 		luaL_error(lua, "Vector length doesn't match matrix row size");
 		return 0;

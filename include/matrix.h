@@ -11,6 +11,8 @@ struct Matrix {
 	double* values;
 	uint rows;
 	uint cols;
+	uint rows_cap;
+	uint cols_cap;
 };
 
 struct Matrix* matrix_new(uint rows, uint cols);

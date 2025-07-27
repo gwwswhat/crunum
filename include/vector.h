@@ -13,6 +13,7 @@ struct Matrix;
 struct Vector {
 	double* values;
 	uint len;
+	uint cap;
 };
 
 struct Vector* vector_new(uint len);
