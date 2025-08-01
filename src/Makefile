@@ -11,24 +11,25 @@ LIBDIR := $(PREFIX)/lib
 LUALIB := $(LIBDIR)/lua/5.4
 
 OBJ := vector.o \
-			 matrix.o \
-			 crunum.o
+			 matrix.o
 
 all: $(LIBRARY).so
 
 clean:
 	rm -f $(LIBRARY)
 	rm -f $(OBJ)
+	$(MAKE) OBJ="$(OBJ)" -C lua/ clean
 
 install: $(LIBRARY).so
 	@mkdir -p $(LUALIB)
 	cp $< $(LUALIB)
 
 uninstall:
-	rm -f $(LIBDIR)/$(LIBRARY).so
+	rm -f $(LUALIB)/$(LIBRARY).so
 
 $(LIBRARY).so: $(OBJ)
-	gcc -shared -fPIC $^ -o $@ -llua5.4
+	mv $(OBJ) lua/
+	$(MAKE) OBJ="$(OBJ)" LIBRARY=$(LIBRARY) -C lua/ all
 
 %.o: %.c
 	gcc $(CFLAGS) -O2 $< -o $@

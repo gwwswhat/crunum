@@ -8,7 +8,7 @@ extern const luaL_Reg matrix_functions[];
 extern const luaL_Reg matrix_methods[];
 
 struct Matrix {
-	double* values;
+	float* values;
 	uint rows;
 	uint cols;
 	uint rows_cap;
@@ -27,19 +27,19 @@ static inline struct Vector* matrix_pop_row(struct Matrix* matrix){
 }
 
 struct Vector* matrix_pop_col(struct Matrix* matrix);
-static inline double matrix_get(struct Matrix* matrix, uint row, uint col){
+static inline float matrix_get(struct Matrix* matrix, uint row, uint col){
 	return matrix->values[row * matrix->cols + col];
 }
 
-static inline void matrix_set(struct Matrix* matrix, uint row, uint col, double value){
+static inline void matrix_set(struct Matrix* matrix, uint row, uint col, float value){
 	matrix->values[row * matrix->cols + col] = value;
 }
 
 struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2);
-struct Matrix* matrix_mul_scalar(struct Matrix* matrix, double scalar);
+struct Matrix* matrix_mul_scalar(struct Matrix* matrix, float scalar);
 struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector);
 struct Matrix* matrix_add(struct Matrix* matrix1, struct Matrix* matrix2);
-struct Matrix* matrix_add_scalar(struct Matrix* matrix, double scalar);
+struct Matrix* matrix_add_scalar(struct Matrix* matrix, float scalar);
 struct Matrix* matrix_transpose(struct Matrix* matrix);
 static inline void matrix_reshape(struct Matrix* matrix, 
 		uint new_rows, uint new_cols){
