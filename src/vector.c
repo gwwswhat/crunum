@@ -94,7 +94,7 @@ struct Vector* vector_mul_matrix(struct Vector* vector, struct Matrix* matrix){
 	for(uint i = 0; i < vector->len; i++)
 		for(uint j = 0; j < matrix->cols; j++)
 			for(uint k = 0; k < matrix->rows; k++)
-				result->values[j] += vector->values[i] * matrix_get(matrix, j, k);
+				result->values[j] += vector->values[i] * *matrix_get(matrix, j, k);
 	return result;
 }
 

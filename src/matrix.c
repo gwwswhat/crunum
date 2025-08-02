@@ -11,6 +11,16 @@
 
 #if defined(__ARM_NEON)
 #include <arm_neon.h>
+
+static inline float p_vaddvq_f32(float32x4_t v){
+#if defined(__aarch64__)
+	return vaddvq_f32(v);
+#else
+	float32x2_t vtemp = vadd_f32(vget_low_f32(v), vget_high_f32(v));
+	return vget_lane_f32(vtemp, 0) + vget_lane_f32(vtemp, 1);
+#endif
+}
+
 #endif
 
 #include "matrix.h"
@@ -59,16 +69,16 @@ struct Vector* matrix_row(struct Matrix* matrix, uint row){
 #if defined(__ARM_NEON)
 	for(; i + 4 <= matrix->cols; i += 4){
 		float32x4_t vtemp = {
-			matrix_get(matrix, row, i),
-			matrix_get(matrix, row, i + 1),
-			matrix_get(matrix, row, i + 2),
-			matrix_get(matrix, row, i + 3)
+			*matrix_get(matrix, row, i),
+			*matrix_get(matrix, row, i + 1),
+			*matrix_get(matrix, row, i + 2),
+			*matrix_get(matrix, row, i + 3)
 		};
 		vst1q_f32(vector->values + i, vtemp);
 	}
 #endif
 	for(; i < matrix->cols; i++)
-		vector->values[i] = matrix_get(matrix, row, i);
+		vector->values[i] = *matrix_get(matrix, row, i);
 	return vector;
 }
 
@@ -82,7 +92,7 @@ struct Vector* matrix_col(struct Matrix* matrix, uint col){
 	}
 #endif
 	for(; i < matrix->rows; i++)
-		vector->values[i] = matrix_get(matrix, i, col);
+		vector->values[i] = *matrix_get(matrix, i, col);
 	return vector;
 }
 
@@ -90,7 +100,7 @@ void matrix_push_row(struct Matrix* matrix, struct Vector* vector){
 	if(++matrix->rows > matrix->rows_cap){
 		matrix->rows_cap = matrix->rows_cap ? matrix->rows_cap * 2 : 2;
 		matrix->values = realloc(matrix->values, matrix->rows_cap * 
-			matrix->cols_cap * sizeof(float));
+				matrix->cols_cap * sizeof(float));
 	}
 	for(uint i = 0; i < matrix->cols; i++)
 		matrix_set(matrix, matrix->rows - 1, i, vector->values[i]);
@@ -103,7 +113,7 @@ void matrix_push_col(struct Matrix* matrix, struct Vector* vector){
 			sizeof(float));
 	for(uint i = 0; i < matrix->rows; i++){
 		for(uint j = 0; j < matrix->cols - 1; j++)
-			new_values[i * matrix->cols + j] = matrix_get(matrix, i, j);
+			new_values[i * matrix->cols + j] = *matrix_get(matrix, i, j);
 		new_values[i * matrix->cols + matrix->cols - 1] = vector->values[i];
 	}
 	free(matrix->values);
@@ -114,7 +124,7 @@ struct Vector* matrix_pop_col(struct Matrix* matrix){
 	float* new_values = malloc(matrix->rows * (matrix->cols - 1) * sizeof(float));
 	for(uint i = 0; i < matrix->rows; i++)
 		for(uint j = 0; j < matrix->cols - 1; j++)
-			new_values[i * (matrix->cols - 1) + j] = matrix_get(matrix, i, j);
+			new_values[i * (matrix->cols - 1) + j] = *matrix_get(matrix, i, j);
 	free(matrix->values);
 	matrix->values = new_values;
 	return matrix_col(matrix, --matrix->cols);
@@ -124,10 +134,18 @@ struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2){
 	struct Matrix* result = matrix_new(matrix1->rows, matrix2->cols);
 	for(uint i = 0; i < matrix1->rows; i++)
 		for(uint j = 0; j < matrix2->cols; j++){
-			float sum = 0;
-			for(uint k = 0; k < matrix1->cols; k++)
-				sum += matrix_get(matrix1, i, k) * matrix_get(matrix2, k, j);
-			matrix_set(result, i, j, sum);
+			uint k = 0;
+#if defined(__ARM_NEON)
+			for(; k + 4 <= matrix1->cols; k += 4){
+				float32x4_t vmatrix1 = vld1q_f32(matrix_get(matrix1, i, k));
+				float32x4_t vmatrix2 = vld1q_f32(matrix_get(matrix2, k, j));
+				float32x4_t vres = vmulq_f32(vmatrix1, vmatrix2);
+				matrix_set(result, i, j, *matrix_get(result, i, j) + p_vaddvq_f32(vres));
+			}
+#endif
+			for(; k < matrix1->cols; k++)
+				matrix_set(result, i, j, *matrix_get(result, i, j) +
+						*matrix_get(matrix1, i, k) * *matrix_get(matrix2, k, j));
 		}
 	return result;
 }
@@ -151,9 +169,19 @@ struct Matrix* matrix_mul_scalar(struct Matrix* matrix, float scalar){
 struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector){
 	struct Vector* result = vector_new(vector->len);
 	for(uint i = 0; i < matrix->rows; i++)
-		for(uint j = 0; j < vector->len; j++)
-			for(uint k = 0; k < matrix->cols; k++)
-				result->values[j] += matrix_get(matrix, i, k) * vector->values[j];
+		for(uint j = 0; j < vector->len; j++){
+			uint k = 0;
+#if defined(__ARM_NEON)
+			for(; k + 4 <= matrix->cols; k += 4){
+				float32x4_t vmatrix = vld1q_f32(matrix_get(matrix, i, k));
+				float32x4_t vvector = vld1q_f32(vector->values + j);
+				float32x4_t vres = vmulq_f32(vmatrix, vvector);
+				vst1q_f32(result->values + j, vres);
+			}
+#endif
+			for(; k < matrix->cols; k++)
+				result->values[j] += *matrix_get(matrix, i, k) * vector->values[j];
+		}
 	return result;
 }
 
@@ -193,6 +221,6 @@ struct Matrix* matrix_transpose(struct Matrix* matrix){
 	struct Matrix* new_matrix = matrix_new(matrix->cols, matrix->rows);
 	for(uint i = 0; i < matrix->rows; i++)
 		for(uint j = i + 1; j < matrix->cols; j++)
-			matrix_set(new_matrix, j, i, matrix_get(matrix, i, j));
+			matrix_set(new_matrix, j, i, *matrix_get(matrix, i, j));
 	return new_matrix;
 }

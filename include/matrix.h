@@ -18,6 +18,14 @@ struct Matrix {
 struct Matrix* matrix_new(uint rows, uint cols);
 struct Matrix* matrix_randinit(uint rows, uint cols);
 void matrix_free(struct Matrix* matrix);
+static inline float* matrix_get(struct Matrix* matrix, uint i, uint j){
+	return &matrix->values[i * matrix->cols + j];
+}
+
+static inline void matrix_set(struct Matrix* matrix, uint i, uint j, float value){
+	matrix->values[i * matrix->cols + j] = value;
+}
+
 struct Vector* matrix_row(struct Matrix* matrix, uint row);
 struct Vector* matrix_col(struct Matrix* matrix, uint col);
 void matrix_push_row(struct Matrix* matrix, struct Vector* vector);
@@ -27,14 +35,6 @@ static inline struct Vector* matrix_pop_row(struct Matrix* matrix){
 }
 
 struct Vector* matrix_pop_col(struct Matrix* matrix);
-static inline float matrix_get(struct Matrix* matrix, uint row, uint col){
-	return matrix->values[row * matrix->cols + col];
-}
-
-static inline void matrix_set(struct Matrix* matrix, uint row, uint col, float value){
-	matrix->values[row * matrix->cols + col] = value;
-}
-
 struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2);
 struct Matrix* matrix_mul_scalar(struct Matrix* matrix, float scalar);
 struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector);

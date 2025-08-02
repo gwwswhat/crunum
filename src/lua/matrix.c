@@ -78,7 +78,7 @@ static int l_matrix_get(lua_State* lua){
 		luaL_error(lua, "Out of bound");
 		return 0;
 	}
-	lua_pushnumber(lua, matrix_get(matrix, (uint)row, (uint)col));
+	lua_pushnumber(lua, *matrix_get(matrix, (uint)row, (uint)col));
 	return 1;
 }
 
@@ -228,7 +228,7 @@ static int l_matrix_tostring(lua_State* lua){
 		luaL_addstring(&buffer, "\n  {");
 		for(uint j = 0; j < matrix->cols; j++){
 			char num[16];
-			snprintf(num, sizeof(num), "%.2lf", matrix_get(matrix, i, j));
+			snprintf(num, sizeof(num), "%.2lf", *matrix_get(matrix, i, j));
 			luaL_addstring(&buffer, num);
 			if(j != matrix->cols - 1)
 				luaL_addstring(&buffer, ", ");
