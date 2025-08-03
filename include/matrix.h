@@ -50,5 +50,11 @@ static inline void matrix_reshape(struct Matrix* matrix,
 }
 
 struct Matrix* matrix_inverse(struct Matrix* matrix, uint* invertible);
+uint matrix_eq(struct Matrix* matrix1, struct Matrix* matrix2);
+uint matrix_neq(struct Matrix* matrix1, struct Matrix* matrix2);
+uint matrix_gt(struct Matrix* matrix1, struct Matrix* matrix2);
+uint matrix_ge(struct Matrix* matrix1, struct Matrix* matrix2);
+uint matrix_lt(struct Matrix* matrix1, struct Matrix* matrix2);
+uint matrix_le(struct Matrix* matrix1, struct Matrix* matrix2);
 
 #endif

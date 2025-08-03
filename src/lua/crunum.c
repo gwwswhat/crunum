@@ -34,5 +34,7 @@ int luaopen_crunum(lua_State* lua){
 	lua_newtable(lua);
 	luaL_setfuncs(lua, vector_functions, 0);
 	lua_setfield(lua, -2, "vector");
+	lua_pushstring(lua, VERSION);
+	lua_setfield(lua, -2, "version");
 	return 1;
 }

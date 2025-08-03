@@ -351,6 +351,78 @@ static int l_matrix_pow(lua_State* lua){
 	return 1;
 }
 
+static int l_matrix_eq(lua_State* lua){
+	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+	if(matrix1->rows != matrix2->rows ||
+			matrix1->cols != matrix2->cols){
+		luaL_error(lua, "Both matrix aren't the same size");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)matrix_eq(matrix1, matrix2));
+	return 1;
+}
+
+static int l_matrix_neq(lua_State* lua){
+	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+	if(matrix1->rows != matrix2->rows ||
+			matrix1->cols != matrix2->cols){
+		luaL_error(lua, "Both matrix aren't the same size");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)matrix_neq(matrix1, matrix2));
+	return 1;
+}
+
+static int l_matrix_gt(lua_State* lua){
+	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+	if(matrix1->rows != matrix2->rows ||
+			matrix1->cols != matrix2->cols){
+		luaL_error(lua, "Both matrix aren't the same size");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)matrix_gt(matrix1, matrix2));
+	return 1;
+}
+
+static int l_matrix_ge(lua_State* lua){
+	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+	if(matrix1->rows != matrix2->rows ||
+			matrix1->cols != matrix2->cols){
+		luaL_error(lua, "Both matrix aren't the same size");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)matrix_ge(matrix1, matrix2));
+	return 1;
+}
+
+static int l_matrix_lt(lua_State* lua){
+	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+	if(matrix1->rows != matrix2->rows ||
+			matrix1->cols != matrix2->cols){
+		luaL_error(lua, "Both matrix aren't the same size");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)matrix_lt(matrix1, matrix2));
+	return 1;
+}
+
+static int l_matrix_le(lua_State* lua){
+	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+	if(matrix1->rows != matrix2->rows ||
+			matrix1->cols != matrix2->cols){
+		luaL_error(lua, "Both matrix aren't the same size");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)matrix_le(matrix1, matrix2));
+	return 1;
+}
+
 const luaL_Reg matrix_functions[] = {
 	{"new", l_matrix_new},
 	{"randinit", l_matrix_randinit},
@@ -378,5 +450,11 @@ const luaL_Reg matrix_methods[] = {
 	{"__mul", l_matrix_mul},
 	{"__add", l_matrix_add},
 	{"__pow", l_matrix_pow},
+	{"__eq", l_matrix_eq},
+	{"__neq", l_matrix_neq},
+	{"__gt", l_matrix_gt},
+	{"__ge", l_matrix_ge},
+	{"__lt", l_matrix_lt},
+	{"__le", l_matrix_le},
 	{NULL, NULL}
 };

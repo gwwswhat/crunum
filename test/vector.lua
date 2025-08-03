@@ -1,12 +1,14 @@
 package.cpath = "./?.so"
 
-local cn = require "crunum"
+local crn = require("crunum")
 
-local vec1 = cn.vector.new(10)
+print("Version: ", crn.version)
+
+local vec1 = crn.vector.new(10)
 
 print("Vector 1: ", vec1)
 
-local vec2 = cn.vector.randinit(10)
+local vec2 = crn.vector.randinit(10)
 
 print("Vector 2: ", vec2)
 
@@ -31,7 +33,7 @@ print("vec1 + 2.4: ", vec1 + 2.4)
 
 print("vec2 * 3.4: ", vec2 * 3.4)
 
-local empty_vec = cn.vector.new(0)
+local empty_vec = crn.vector.new(0)
 
 print("Empty Vector: ", empty_vec)
 

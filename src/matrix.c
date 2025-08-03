@@ -22,8 +22,36 @@ static inline float p_vaddvq_f32(float32x4_t v){
 #endif
 }
 
+static inline uint is_lanes_eq(float32x4_t v1, float32x4_t v2){
+	return vmaxvq_u32(vceqq_f32(v1, v2));
+}
+
+static inline uint is_lanes_neq(float32x4_t v1, float32x4_t v2){
+	return !is_lanes_eq(v1, v2);
+}
+
+static inline uint is_lanes_gt(float32x4_t v1, float32x4_t v2){
+	return vmaxvq_u32(vcgtq_f32(v1, v2));
+}
+
+static inline uint is_lanes_ge(float32x4_t v1, float32x4_t v2){
+	return vmaxvq_u32(vcgeq_f32(v1, v2));
+}
+
+static inline uint is_lanes_lt(float32x4_t v1, float32x4_t v2){
+	return vmaxvq_u32(vcltq_f32(v1, v2));
+}
+
+static inline uint is_lanes_le(float32x4_t v1, float32x4_t v2){
+	return vmaxvq_u32(vcleq_f32(v1, v2));
+}
+
+static inline uint any_lane_is(float32x4_t v, float scalar){
+	return is_lanes_eq(v, vdupq_n_f32(scalar));
+}
+
 static inline uint any_lane_is_zero(float32x4_t v){
-	return vmaxvq_u32(vceqq_f32(v, vdupq_n_f32(0.0f))) != 0;
+	return any_lane_is(v, 0.0f);
 }
 
 #endif
@@ -380,4 +408,88 @@ struct Matrix* matrix_inverse(struct Matrix* matrix, uint* invertible){
 	}
 	matrix_free(copy_matrix);
 	return result;
+}
+
+uint matrix_eq(struct Matrix* matrix1, struct Matrix* matrix2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4)
+		if(is_lanes_neq(vld1q_f32(matrix1->values + i), 
+					vld1q_f32(matrix2->values)))
+			return 0;
+#endif
+	for(; i < matrix1->rows * matrix1->cols; i++)
+		if(matrix1->values[i] != matrix2->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_neq(struct Matrix* matrix1, struct Matrix* matrix2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4)
+		if(is_lanes_eq(vld1q_f32(matrix1->values + i), 
+					vld1q_f32(matrix2->values)))
+			return 0;
+#endif
+	for(; i < matrix1->rows * matrix1->cols; i++)
+		if(matrix1->values[i] == matrix2->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_gt(struct Matrix* matrix1, struct Matrix* matrix2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4)
+		if(is_lanes_le(vld1q_f32(matrix1->values + i), 
+					vld1q_f32(matrix2->values)))
+			return 0;
+#endif
+	for(; i < matrix1->rows * matrix1->cols; i++)
+		if(matrix1->values[i] <= matrix2->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_ge(struct Matrix* matrix1, struct Matrix* matrix2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4)
+		if(is_lanes_lt(vld1q_f32(matrix1->values + i), 
+					vld1q_f32(matrix2->values)))
+			return 0;
+#endif
+	for(; i < matrix1->rows * matrix1->cols; i++)
+		if(matrix1->values[i] < matrix2->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_lt(struct Matrix* matrix1, struct Matrix* matrix2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4)
+		if(is_lanes_ge(vld1q_f32(matrix1->values + i), 
+					vld1q_f32(matrix2->values)))
+			return 0;
+#endif
+	for(; i < matrix1->rows * matrix1->cols; i++)
+		if(matrix1->values[i] >= matrix2->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_le(struct Matrix* matrix1, struct Matrix* matrix2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4)
+		if(is_lanes_gt(vld1q_f32(matrix1->values + i), 
+					vld1q_f32(matrix2->values)))
+			return 0;
+#endif
+	for(; i < matrix1->rows * matrix1->cols; i++)
+		if(matrix1->values[i] > matrix2->values[i])
+			return 0;
+	return 1;
 }
