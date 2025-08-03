@@ -197,6 +197,72 @@ static int l_vector_add(lua_State* lua){
 	return 0;
 }
 
+static int l_vector_eq(lua_State* lua){
+	struct Vector* vector1 = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector2 = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
+	if(vector1->len != vector2->len){
+		luaL_error(lua, "Both vector aren't the same length");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)vector_eq(vector1, vector2));
+	return 1;
+}
+
+static int l_vector_neq(lua_State* lua){
+	struct Vector* vector1 = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector2 = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
+	if(vector1->len != vector2->len){
+		luaL_error(lua, "Both vector aren't the same length");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)vector_neq(vector1, vector2));
+	return 1;
+}
+
+static int l_vector_gt(lua_State* lua){
+	struct Vector* vector1 = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector2 = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
+	if(vector1->len != vector2->len){
+		luaL_error(lua, "Both vector aren't the same length");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)vector_gt(vector1, vector2));
+	return 1;
+}
+
+static int l_vector_ge(lua_State* lua){
+	struct Vector* vector1 = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector2 = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
+	if(vector1->len != vector2->len){
+		luaL_error(lua, "Both vector aren't the same length");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)vector_ge(vector1, vector2));
+	return 1;
+}
+
+static int l_vector_lt(lua_State* lua){
+	struct Vector* vector1 = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector2 = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
+	if(vector1->len != vector2->len){
+		luaL_error(lua, "Both vector aren't the same length");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)vector_lt(vector1, vector2));
+	return 1;
+}
+
+static int l_vector_le(lua_State* lua){
+	struct Vector* vector1 = *(struct Vector**)luaL_checkudata(lua, 1, "CrunumVector");
+	struct Vector* vector2 = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
+	if(vector1->len != vector2->len){
+		luaL_error(lua, "Both vector aren't the same length");
+		return 0;
+	}
+	lua_pushboolean(lua, (int)vector_le(vector1, vector2));
+	return 1;
+}
+
 const luaL_Reg vector_functions[] = {
 	{"new", l_vector_new},
 	{"randinit", l_vector_randinit},
@@ -214,5 +280,11 @@ const luaL_Reg vector_methods[] = {
 	{"__tostring", l_vector_tostring},
 	{"__mul", l_vector_mul},
 	{"__add", l_vector_add},
+	{"__eq", l_vector_eq},
+	{"__neq", l_vector_neq},
+	{"__gt", l_vector_gt},
+	{"__ge", l_vector_ge},
+	{"__lt", l_vector_lt},
+	{"__le", l_vector_le},
 	{NULL, NULL}
 };

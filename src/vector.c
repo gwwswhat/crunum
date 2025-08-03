@@ -9,10 +9,6 @@
 #include <string.h>
 #include <time.h>
 
-#if defined(__ARM_NEON)
-#include <arm_neon.h>
-#endif
-
 #include "matrix.h"
 #include "vector.h"
 
@@ -137,4 +133,88 @@ struct Vector* vector_add_scalar(struct Vector* vector, float scalar){
 	for(; i < vector->len; i++)
 		result->values[i] = vector->values[i] + scalar;
 	return result;
+}
+
+uint vector_eq(struct Vector* vector1, struct Vector* vector2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= vector1->len; i += 4)
+		if(is_lanes_neq(vld1q_f32(vector1->values + i),
+					vld1q_f32(vector2->values + i)))
+			return 0;
+#endif
+	for(; i < vector1->len; i++)
+		if(vector1->values[i] != vector2->values[i])
+			return 0;
+	return 1;
+}
+
+uint vector_neq(struct Vector* vector1, struct Vector* vector2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= vector1->len; i += 4)
+		if(is_lanes_eq(vld1q_f32(vector1->values + i),
+					vld1q_f32(vector2->values + i)))
+			return 0;
+#endif
+	for(; i < vector1->len; i++)
+		if(vector1->values[i] == vector2->values[i])
+			return 0;
+	return 1;
+}
+
+uint vector_gt(struct Vector* vector1, struct Vector* vector2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= vector1->len; i += 4)
+		if(is_lanes_le(vld1q_f32(vector1->values + i),
+					vld1q_f32(vector2->values + i)))
+			return 0;
+#endif
+	for(; i < vector1->len; i++)
+		if(vector1->values[i] <= vector2->values[i])
+			return 0;
+	return 1;
+}
+
+uint vector_ge(struct Vector* vector1, struct Vector* vector2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= vector1->len; i += 4)
+		if(is_lanes_lt(vld1q_f32(vector1->values + i),
+					vld1q_f32(vector2->values + i)))
+			return 0;
+#endif
+	for(; i < vector1->len; i++)
+		if(vector1->values[i] < vector2->values[i])
+			return 0;
+	return 1;
+}
+
+uint vector_lt(struct Vector* vector1, struct Vector* vector2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= vector1->len; i += 4)
+		if(is_lanes_ge(vld1q_f32(vector1->values + i),
+					vld1q_f32(vector2->values + i)))
+			return 0;
+#endif
+	for(; i < vector1->len; i++)
+		if(vector1->values[i] >= vector2->values[i])
+			return 0;
+	return 1;
+}
+
+uint vector_le(struct Vector* vector1, struct Vector* vector2){
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= vector1->len; i += 4)
+		if(is_lanes_gt(vld1q_f32(vector1->values + i),
+					vld1q_f32(vector2->values + i)))
+			return 0;
+#endif
+	for(; i < vector1->len; i++)
+		if(vector1->values[i] > vector2->values[i])
+			return 0;
+	return 1;
 }

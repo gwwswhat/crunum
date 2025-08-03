@@ -30,5 +30,11 @@ struct Vector* vector_mul_scalar(struct Vector* vector, float scalar);
 struct Vector* vector_mul_matrix(struct Vector* vector, struct Matrix* matrix);
 struct Vector* vector_add(struct Vector* vector1, struct Vector* vector2);
 struct Vector* vector_add_scalar(struct Vector* vector, float scalar);
+uint vector_eq(struct Vector* vector1, struct Vector* vector2);
+uint vector_neq(struct Vector* vector1, struct Vector* vector2);
+uint vector_gt(struct Vector* vector1, struct Vector* vector2);
+uint vector_ge(struct Vector* vector1, struct Vector* vector2);
+uint vector_lt(struct Vector* vector1, struct Vector* vector2);
+uint vector_le(struct Vector* vector1, struct Vector* vector2);
 
 #endif
