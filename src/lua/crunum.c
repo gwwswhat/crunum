@@ -7,6 +7,9 @@
 
 #pragma message "Lua Crunum"
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "matrix.h"
 #include "vector.h"
 
@@ -16,6 +19,7 @@ extern const luaL_Reg vector_methods[];
 extern const luaL_Reg vector_functions[];
 
 int luaopen_crunum(lua_State* lua){
+	srand(time(NULL));
 	luaL_newmetatable(lua, "CrunumMatrix");
 	lua_pushvalue(lua, -1);
 	lua_setfield(lua, -2, "__index");

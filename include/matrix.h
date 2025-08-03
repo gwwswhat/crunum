@@ -17,6 +17,7 @@ struct Matrix {
 
 struct Matrix* matrix_new(uint rows, uint cols);
 struct Matrix* matrix_randinit(uint rows, uint cols);
+struct Matrix* matrix_identity(uint size);
 void matrix_free(struct Matrix* matrix);
 static inline float* matrix_get(struct Matrix* matrix, uint i, uint j){
 	return &matrix->values[i * matrix->cols + j];
@@ -40,11 +41,14 @@ struct Matrix* matrix_mul_scalar(struct Matrix* matrix, float scalar);
 struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector);
 struct Matrix* matrix_add(struct Matrix* matrix1, struct Matrix* matrix2);
 struct Matrix* matrix_add_scalar(struct Matrix* matrix, float scalar);
+struct Matrix* matrix_pow(struct Matrix* matrix, int exp, uint* invertible);
 struct Matrix* matrix_transpose(struct Matrix* matrix);
 static inline void matrix_reshape(struct Matrix* matrix, 
 		uint new_rows, uint new_cols){
 	matrix->rows = new_rows;
 	matrix->cols = new_cols;
 }
+
+struct Matrix* matrix_inverse(struct Matrix* matrix, uint* invertible);
 
 #endif

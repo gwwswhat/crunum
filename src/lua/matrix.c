@@ -69,6 +69,19 @@ static int l_matrix_from(lua_State* lua){
 	return 1;
 }
 
+static int l_matrix_identity(lua_State* lua){
+	int size = luaL_checkinteger(lua, 1);
+	if(size < 0){
+		luaL_error(lua, "Matrix dimension can't be negative");
+		return 0;
+	}
+	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
+	*matrix = matrix_identity((uint)size);
+	luaL_getmetatable(lua, "CrunumMatrix");
+	lua_setmetatable(lua, -2);
+	return 1;
+}
+
 static int l_matrix_get(lua_State* lua){
 	struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
 	int row = luaL_checkinteger(lua, 2) - 1;
@@ -161,6 +174,19 @@ static int l_matrix_reshape(lua_State* lua){
 	return 0;
 }
 
+static int l_matrix_inverse(lua_State* lua){
+	struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	if(matrix->rows != matrix->cols){
+		luaL_error(lua, "Matrix isn't a square");
+		return 0;
+	}
+	uint invertible;
+	matrix_inverse(matrix, &invertible);
+	if(!invertible)
+		luaL_error(lua, "Matrix can't be inversed");
+	return 0;
+}
+
 static int l_matrix_push_row(lua_State* lua){
 	struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
@@ -214,8 +240,7 @@ static int l_matrix_pop_col(lua_State* lua){
 }
 
 static int l_matrix_gc(lua_State* lua){
-	struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
-	matrix_free(matrix);
+	matrix_free(*(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix"));
 	return 0;
 }
 
@@ -307,10 +332,30 @@ static int l_matrix_add(lua_State* lua){
 	return 0;
 }
 
+static int l_matrix_pow(lua_State* lua){
+	struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	if(matrix->rows != matrix->cols){
+		luaL_error(lua, "Matrix isn't a square");
+		return 0;
+	}
+	uint invertible;
+	struct Matrix* pow = matrix_pow(matrix, luaL_checkinteger(lua, 2), &invertible);
+	if(!invertible){
+		luaL_error(lua, "Matrix can't be inversed");
+		return 0;
+	}
+	struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+	*result = pow;
+	luaL_getmetatable(lua, "CrunumMatrix");
+	lua_setmetatable(lua, -2);
+	return 1;
+}
+
 const luaL_Reg matrix_functions[] = {
 	{"new", l_matrix_new},
 	{"randinit", l_matrix_randinit},
 	{"from", l_matrix_from},
+	{"identity", l_matrix_identity},
 	{NULL, NULL}
 };
 
@@ -323,6 +368,7 @@ const luaL_Reg matrix_methods[] = {
 	{"cols", l_matrix_cols},
 	{"transpose", l_matrix_transpose},
 	{"reshape", l_matrix_reshape},
+	{"inverse", l_matrix_inverse},
 	{"push_row", l_matrix_push_row},
 	{"push_col", l_matrix_push_col},
 	{"pop_row", l_matrix_pop_row},
@@ -331,5 +377,6 @@ const luaL_Reg matrix_methods[] = {
 	{"__tostring", l_matrix_tostring},
 	{"__mul", l_matrix_mul},
 	{"__add", l_matrix_add},
+	{"__pow", l_matrix_pow},
 	{NULL, NULL}
 };
