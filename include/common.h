@@ -1,6 +1,9 @@
 #ifndef CRUNUM_COMMON_H
 #define CRUNUM_COMMON_H
 
+#define EPSILON 1e-6
+#define VERSION "1.1.0"
+
 #if defined(__ARM_NEON)
 #include <arm_neon.h>
 
@@ -46,9 +49,6 @@ static inline uint any_lane_is_zero(float32x4_t v){
 }
 
 #endif
-
-#define EPSILON 1e-6
-#define VERSION "1.0.0"
 
 typedef unsigned int uint;
 
