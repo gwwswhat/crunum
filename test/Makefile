@@ -1,10 +1,22 @@
 .PHONY: test
 
 LUA ?= lua
+PYTHON ?= python
 
-LUA_SCRIPTS := $(wildcard *.lua)
+SCRIPTS := matrix \
+					 vector
+
+LUA_SCRIPTS := $(SCRIPTS:%=%.lua)
+PYTHON_SCRIPTS := $(SCRIPTS:%=%.py)
 
 test:
-	@for lua_script in $(LUA_SCRIPTS); do \
-		$(LUA) $$lua_script; \
-	done
+	@if [ "$(TARGET)" = "lua" ]; then \
+		for lua_script in $(LUA_SCRIPTS); do \
+		  $(LUA) $$lua_script; \
+		done \
+	fi
+	@if [ "$(TARGET)" = "python" ]; then \
+		for python_script in $(PYTHON_SCRIPTS); do \
+		  $(PYTHON) $$python_script; \
+		done \
+	fi

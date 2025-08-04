@@ -7,11 +7,7 @@
 
 #pragma message "Lua Matrix"
 
-#include <lua5.4/lua.h>
-#include <lua5.4/lauxlib.h>
-#include <lua5.4/lualib.h>
-
-#include "matrix.h"
+#include "lua.h"
 
 static int l_matrix_new(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);

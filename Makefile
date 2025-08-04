@@ -2,19 +2,24 @@
 
 LIBRARY := crunum
 
+PREFIX ?= /usr/local
+
+LIBDIR := $(PREFIX)/lib
+
 all:
-	$(MAKE) -C src/ all
+	$(MAKE) TARGET="$(TARGET)" -C src/ all
 
 clean:
-	$(MAKE) -C src/ clean
+	$(MAKE) TARGET="$(TARGET)" -C src/ clean
 
 install:
-	$(MAKE) -C src/ install
+	$(MAKE) TARGET="$(TARGET)" LIBDIR="$(LIBDIR)" -C src/ install
 
 uninstall:
-	$(MAKE) -C src/ uninstall
+	$(MAKE) TARGET="$(TARGET)" LIBDIR="$(LIBDIR)" -C src/ uninstall
 
 test:
-	$(MAKE) -C src/ all
-	mv $(LIBRARY).so test/
-	$(MAKE) -C test/ test
+	$(MAKE) TARGET="$(TARGET)" -C src/ all
+	mv src/$(TARGET)$(LIBRARY).so test/$(LIBRARY).so
+	$(MAKE) TARGET="$(TARGET)" -C test/ test
+	rm test/$(LIBRARY).so

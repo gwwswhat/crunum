@@ -2,7 +2,7 @@ package.cpath = "./?.so"
 
 local crn = require("crunum")
 
-print("Version: ", crn.version)
+print("Version: ", crn.__version__)
 
 local vec1 = crn.vector.new(10)
 

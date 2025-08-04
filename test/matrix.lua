@@ -2,7 +2,7 @@ package.cpath = "./?.so"
 
 local crn = require("crunum")
 
-print("Version: ", crn.version)
+print("Version: ", crn.__version__)
 
 local mat1 = crn.matrix.new(10, 2)
 local mat2 = crn.matrix.randinit(2, 10)

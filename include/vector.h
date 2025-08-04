@@ -1,12 +1,7 @@
 #ifndef CRUNUM_VECTOR_H
 #define CRUNUM_VECTOR_H
 
-#include <lua5.4/lauxlib.h>
-
 #include "common.h"
-
-extern const luaL_Reg vector_functions[];
-extern const luaL_Reg vector_methods[];
 
 struct Matrix;
 

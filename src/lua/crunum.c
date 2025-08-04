@@ -10,13 +10,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "matrix.h"
-#include "vector.h"
-
-extern const luaL_Reg matrix_methods[];
-extern const luaL_Reg matrix_functions[];
-extern const luaL_Reg vector_methods[];
-extern const luaL_Reg vector_functions[];
+#include "lua.h"
 
 int luaopen_crunum(lua_State* lua){
 	srand(time(NULL));
@@ -35,6 +29,6 @@ int luaopen_crunum(lua_State* lua){
 	luaL_setfuncs(lua, vector_functions, 0);
 	lua_setfield(lua, -2, "vector");
 	lua_pushstring(lua, VERSION);
-	lua_setfield(lua, -2, "version");
+	lua_setfield(lua, -2, "__version__");
 	return 1;
 }

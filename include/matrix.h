@@ -4,9 +4,6 @@
 #include "vector.h"
 #include "common.h"
 
-extern const luaL_Reg matrix_functions[];
-extern const luaL_Reg matrix_methods[];
-
 struct Matrix {
 	float* values;
 	uint rows;

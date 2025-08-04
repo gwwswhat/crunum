@@ -23,11 +23,11 @@ git clone https://github.com/Vgwws/crunum.git
 ```
 Install it
 ```bash
-make install
+make TARGET=<target-language> install
 ```
 If you want to uninstall it
 ```bash
-make uninstall
+make TARGET=<target-language> uninstall
 ```
 
 ## Examples Code
@@ -37,7 +37,7 @@ Lua:
 ```lua
 local crn = require("crunum") -- Import it
 
-print("Version: ", crn.version) -- Print the library version
+print("Version: ", crn.__version__) -- Print the library version
 
 local mat1 = crn.matrix.new(10, 10) -- Make a new matrix with size 10x10
 

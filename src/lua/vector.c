@@ -7,12 +7,7 @@
 
 #pragma message "Lua Vector"
 
-#include <lua5.4/lua.h>
-#include <lua5.4/lauxlib.h>
-#include <lua5.4/lualib.h>
-
-#include "vector.h"
-#include "matrix.h"
+#include "lua.h"
 
 static int l_vector_new(lua_State* lua){
 	int len = luaL_checkinteger(lua, 1);
