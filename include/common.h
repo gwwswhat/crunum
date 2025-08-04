@@ -2,7 +2,7 @@
 #define CRUNUM_COMMON_H
 
 #define EPSILON 1e-6
-#define VERSION "1.1.0"
+#define VERSION "0.0.0"
 
 #if defined(__ARM_NEON)
 #include <arm_neon.h>
