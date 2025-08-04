@@ -2,7 +2,7 @@
 
 PYTHON_VERSION ?= python3
 
-PY_INCLUDE_FLAGS := -c -I../../include -Wall -Wextra -Werror -std=gnu99  $(shell $(PYTHON_VERSION)-config --includes)
+PY_INCLUDE_FLAGS := -c -I../../include -Wall -Wextra -Werror -std=gnu99 -fPIC  $(shell $(PYTHON_VERSION)-config --includes)
 PY_LINK_FLAGS := $(shell $(PYTHON_VERSION)-config --ldflags)
 
 PYLIB := $(shell $(PYTHON_VERSION) -m site --user-site)

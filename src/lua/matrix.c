@@ -188,8 +188,8 @@ static int l_matrix_push_row(lua_State* lua){
 	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
 	matrix->cols = matrix->cols ? matrix->cols : vector->len;
 	matrix->cols_cap = matrix->cols_cap ? matrix->cols_cap : vector->len;
-	if(vector->len != matrix->cols){
-		luaL_error(lua, "Vector length doesn't match matrix col size");
+	if(matrix->cols != vector->len){
+		luaL_error(lua, "Matrix col size doesn't match vector length");
 		return 0;
 	}
 	matrix_push_row(matrix, vector);
@@ -201,8 +201,8 @@ static int l_matrix_push_col(lua_State* lua){
 	struct Vector* vector = *(struct Vector**)luaL_checkudata(lua, 2, "CrunumVector");
 	matrix->rows = matrix->rows ? matrix->rows : vector->len;
 	matrix->rows_cap = matrix->rows_cap ? matrix->rows_cap : vector->len;
-	if(vector->len != matrix->rows){
-		luaL_error(lua, "Vector length doesn't match matrix row size");
+	if(matrix->rows != vector->len){
+		luaL_error(lua, "Matrix row size doesn't match vector length");
 		return 0;
 	}
 	matrix_push_col(matrix, vector);
@@ -242,26 +242,26 @@ static int l_matrix_gc(lua_State* lua){
 
 static int l_matrix_tostring(lua_State* lua){
 	struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
-	luaL_Buffer buffer;
-	luaL_buffinit(lua, &buffer);
-	luaL_addchar(&buffer, '{');
+	luaL_Buffer result;
+	luaL_buffinit(lua, &result);
+	luaL_addchar(&result, '{');
 	for(uint i = 0; i < matrix->rows; i++){
-		luaL_addstring(&buffer, "\n  {");
+		luaL_addstring(&result, "\n  {");
 		for(uint j = 0; j < matrix->cols; j++){
 			char num[16];
 			snprintf(num, sizeof(num), "%.2lf", *matrix_get(matrix, i, j));
-			luaL_addstring(&buffer, num);
+			luaL_addstring(&result, num);
 			if(j != matrix->cols - 1)
-				luaL_addstring(&buffer, ", ");
+				luaL_addstring(&result, ", ");
 		}
-		luaL_addchar(&buffer, '}');
+		luaL_addchar(&result, '}');
 		if(i != matrix->rows - 1)
-			luaL_addchar(&buffer, ',');
+			luaL_addchar(&result, ',');
 	}
-	if(matrix->rows == 1)
-		luaL_addchar(&buffer, '\n');
-	luaL_addchar(&buffer, '}');
-	luaL_pushresult(&buffer);
+	if(matrix->rows)
+		luaL_addchar(&result, '\n');
+	luaL_addchar(&result, '}');
+	luaL_pushresult(&result);
 	return 1;
 }
 

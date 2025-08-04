@@ -1,6 +1,6 @@
 .PHONY: all clean install uninstall
 
-CFLAGS := -c -I../include -Wall -Wextra -Werror -std=gnu99
+CFLAGS := -c -I../include -Wall -Wextra -Werror -std=gnu99 -fPIC
 
 LIBRARY := crunum
 
@@ -8,7 +8,7 @@ OBJ := vector.o \
 			 matrix.o
 
 all: $(TARGET)/$(LIBRARY).so
-	mv $(TARGET)/$(LIBRARY).so $(TARGET)$(LIBRARY).so
+	mv $< ./$(TARGET)$(LIBRARY).so
 
 clean:
 	rm -f $(LIBRARY)

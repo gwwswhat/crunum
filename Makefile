@@ -7,16 +7,17 @@ PREFIX ?= /usr/local
 LIBDIR := $(PREFIX)/lib
 
 all:
-	$(MAKE) TARGET="$(TARGET)" -C src/ all
+	$(MAKE) TARGET="$(TARGET)" LIBRARY="$(LIBRARY)" -C src/ all
+	mv src/$(TARGET)$(LIBRARY).so .
 
 clean:
-	$(MAKE) TARGET="$(TARGET)" -C src/ clean
+	$(MAKE) TARGET="$(TARGET)" LIBRARY="$(LIBRARY)" -C src/ clean
 
 install:
-	$(MAKE) TARGET="$(TARGET)" LIBDIR="$(LIBDIR)" -C src/ install
+	$(MAKE) TARGET="$(TARGET)" LIBRARY="$(LIBRARY)" LIBDIR="$(LIBDIR)" -C src/ install
 
 uninstall:
-	$(MAKE) TARGET="$(TARGET)" LIBDIR="$(LIBDIR)" -C src/ uninstall
+	$(MAKE) TARGET="$(TARGET)" LIBRARY="$(LIBRARY)" LIBDIR="$(LIBDIR)" -C src/ uninstall
 
 test:
 	$(MAKE) TARGET="$(TARGET)" -C src/ all

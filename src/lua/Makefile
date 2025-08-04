@@ -1,6 +1,6 @@
 .PHONY: all clean install uninstall
 
-CFLAGS := -c -I ../../include -Wall -Wextra -Werror -std=gnu99
+CFLAGS := -c -I ../../include -Wall -Wextra -Werror -std=gnu99 -fPIC
 
 LUA_OBJ := $(OBJ:%.o=lua_%.o) lua_crunum.o
 

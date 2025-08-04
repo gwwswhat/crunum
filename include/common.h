@@ -51,5 +51,6 @@ static inline uint any_lane_is_zero(float32x4_t v){
 #endif
 
 typedef unsigned int uint;
+typedef unsigned long ulong;
 
 #endif
