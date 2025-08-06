@@ -6,19 +6,19 @@
 #include "matrix.h"
 #include "vector.h"
 
-struct PyMatrix {
+struct CrunumMatrix {
 	PyObject_HEAD
 	struct Matrix* matrix;
 };
 
-struct PyVector {
+struct CrunumVector {
 	PyObject_HEAD
 	struct Vector* vector;
 };
 
-extern PyTypeObject py_matrix_type;
-extern PyModuleDef py_matrix_def;
-extern PyTypeObject py_vector_type;
-extern PyModuleDef py_vector_def;
+extern PyTypeObject crn_matrix_type;
+extern PyModuleDef crn_matrix_def;
+extern PyTypeObject crn_vector_type;
+extern PyModuleDef crn_vector_def;
 
 #endif

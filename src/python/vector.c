@@ -1,30 +1,39 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0
+ * Copyright (C) 2025 Vgwws
+ *
+ * This file is licensed under GPL-3.0. See LICENSE for details.
+ */
+
+#pragma message "Python Vector"
+
 #include "python.h"
 
-static PyObject* py_vector_new(PyObject* self, PyObject* args){
+static PyObject* crn_vector_new(PyObject* self, PyObject* args){
 	(void)self;
 	uint len;
 	if(!PyArg_ParseTuple(args, "I", &len))
 		return NULL;
-	struct PyVector* py_vector = PyObject_New(struct PyVector, &py_vector_type);
-	if(!py_vector)
+	struct CrunumVector* crn_vector = PyObject_New(struct CrunumVector, &crn_vector_type);
+	if(!crn_vector)
 		return NULL;
-	py_vector->vector = vector_new(len);
-	return (PyObject*)py_vector;
+	crn_vector->vector = vector_new(len);
+	return (PyObject*)crn_vector;
 }
 
-static PyObject* py_vector_randinit(PyObject* self, PyObject* args){
+static PyObject* crn_vector_randinit(PyObject* self, PyObject* args){
 	(void)self;
 	uint len;
 	if(!PyArg_ParseTuple(args, "I", &len))
 		return NULL;
-	struct PyVector* py_vector = PyObject_New(struct PyVector, &py_vector_type);
-	if(!py_vector)
+	struct CrunumVector* crn_vector = PyObject_New(struct CrunumVector, &crn_vector_type);
+	if(!crn_vector)
 		return NULL;
-	py_vector->vector = vector_randinit(len);
-	return (PyObject*)py_vector;
+	crn_vector->vector = vector_randinit(len);
+	return (PyObject*)crn_vector;
 }
 
-static PyObject* py_vector_from(PyObject* self, PyObject* args){
+static PyObject* crn_vector_from(PyObject* self, PyObject* args){
 	(void)self;
 	PyObject* list;
 	if(!PyArg_ParseTuple(args, "O", &list))
@@ -34,35 +43,35 @@ static PyObject* py_vector_from(PyObject* self, PyObject* args){
 		return NULL;
 	}
 	uint len = (uint)PyList_Size(list);
-	struct PyVector* py_vector = PyObject_New(struct PyVector, &py_vector_type);
-	if(!py_vector)
+	struct CrunumVector* crn_vector = PyObject_New(struct CrunumVector, &crn_vector_type);
+	if(!crn_vector)
 		return NULL;
-	py_vector->vector = vector_new(len);
+	crn_vector->vector = vector_new(len);
 	for(uint i = 0; i < len; i++){
 		PyObject* item = PyList_GetItem(list, i);
 		if(!PyFloat_Check(item) && !PyLong_Check(item)){
 			PyErr_SetString(PyExc_TypeError, "Vector elements must be float or integer");
-			vector_free(py_vector->vector);
-			PyObject_Del(py_vector);
+			vector_free(crn_vector->vector);
+			PyObject_Del(crn_vector);
 			return NULL;
 		}
-		py_vector->vector->values[i] = (float)PyFloat_AsDouble(item);
+		crn_vector->vector->values[i] = (float)PyFloat_AsDouble(item);
 	}
-	return (PyObject*)py_vector;
+	return (PyObject*)crn_vector;
 }
 
-static PyObject* py_vector_get_attro(PyObject* self, PyObject* attr_name){
-	struct PyVector* py_vector = (struct PyVector*)self;
+static PyObject* crn_vector_get_attro(PyObject* self, PyObject* attr_name){
+	struct CrunumVector* crn_vector = (struct CrunumVector*)self;
 	if(!PyUnicode_Check(attr_name)){
 		PyErr_SetString(PyExc_TypeError, "Attribute name isn't a string");
 		return NULL;
 	}
 	if(!PyUnicode_CompareWithASCIIString(attr_name, "len"))
-		return PyLong_FromUnsignedLong((ulong)py_vector->vector->len);
+		return PyLong_FromUnsignedLong((ulong)crn_vector->vector->len);
 	return PyObject_GenericGetAttr(self, attr_name);
 }
 
-static PyObject* py_vector_push(struct PyVector* self, PyObject* args){
+static PyObject* crn_vector_push(struct CrunumVector* self, PyObject* args){
 	float value;
 	if(!PyArg_ParseTuple(args, "f", &value))
 		return NULL;
@@ -70,38 +79,38 @@ static PyObject* py_vector_push(struct PyVector* self, PyObject* args){
 	Py_RETURN_NONE;
 }
 
-static PyObject* py_vector_pop(struct PyVector* self, PyObject* noargs){
+static PyObject* crn_vector_pop(struct CrunumVector* self, PyObject* noargs){
 	(void)noargs;
 	return PyFloat_FromDouble(vector_pop(self->vector));
 }
 
-static void py_vector_free(struct PyVector* self){
+static void crn_vector_free(struct CrunumVector* self){
 	vector_free(self->vector);
 	Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-static PyObject* py_vector_get(PyObject* self, PyObject* key){
+static PyObject* crn_vector_get(PyObject* self, PyObject* key){
 	if(!PyLong_Check(key)){
 		PyErr_SetString(PyExc_TypeError, "Index must be an integer");
 		return NULL;
 	}
 	long index = PyLong_AsLong(key);
-	struct PyVector* py_vector = (struct PyVector*)self;
-	if((uint)index >= py_vector->vector->len || index < 0){
+	struct CrunumVector* crn_vector = (struct CrunumVector*)self;
+	if((uint)index >= crn_vector->vector->len || index < 0){
 		PyErr_SetString(PyExc_IndexError, "Out of bound");
 		return NULL;
 	}
-	return PyFloat_FromDouble(py_vector->vector->values[index]);
+	return PyFloat_FromDouble(crn_vector->vector->values[index]);
 }
 
-static int py_vector_set(PyObject* self, PyObject* key, PyObject* value){
+static int crn_vector_set(PyObject* self, PyObject* key, PyObject* value){
 	if(!PyLong_Check(key)){
 		PyErr_SetString(PyExc_TypeError, "Index must be an integer");
 		return -1;
 	}
 	long index = PyLong_AsLong(key);
-	struct PyVector* py_vector = (struct PyVector*)self;
-	if((uint)index >= py_vector->vector->len || index < 0){
+	struct CrunumVector* crn_vector = (struct CrunumVector*)self;
+	if((uint)index >= crn_vector->vector->len || index < 0){
 		PyErr_SetString(PyExc_IndexError, "Out of bound");
 		return -1;
 	}
@@ -109,12 +118,12 @@ static int py_vector_set(PyObject* self, PyObject* key, PyObject* value){
 		PyErr_SetString(PyExc_TypeError, "Value must be float or integer");
 		return -1;
 	}
-	py_vector->vector->values[index] = (float)PyFloat_AsDouble(value);
+	crn_vector->vector->values[index] = (float)PyFloat_AsDouble(value);
 	return 0;
 }
 
-static PyObject* py_vector_str(PyObject* self){
-	struct Vector* vector = ((struct PyVector*)self)->vector;
+static PyObject* crn_vector_str(PyObject* self){
+	struct Vector* vector = ((struct CrunumVector*)self)->vector;
 	PyObject* result = PyUnicode_FromString("[");
 	for(uint i = 0; i < vector->len; i++){
 		char num[16];
@@ -127,32 +136,128 @@ static PyObject* py_vector_str(PyObject* self){
 	return result;
 }
 
-PyMethodDef py_vector_methods[] = {
-	{"new", py_vector_new, METH_VARARGS,
+static PyObject* crn_vector_add(PyObject* left, PyObject* right){
+	if(PyFloat_Check(left) || PyLong_Check(left)){
+		float scalar = (float)PyFloat_AsDouble(left);
+		struct Vector* vector = ((struct CrunumVector*)right)->vector;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_add_scalar(vector, scalar);
+		return (PyObject*)result;
+	}
+	if(!PyObject_TypeCheck(left, &crn_vector_type))
+		Py_RETURN_NOTIMPLEMENTED;
+	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
+	if(PyObject_TypeCheck(right, &crn_vector_type)){
+		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_add(vector1, vector2);
+		return (PyObject*)result;
+	}
+	if(PyFloat_Check(right) || PyLong_Check(right)){
+		float scalar = (float)PyFloat_AsDouble(right);
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_add_scalar(vector1, scalar);
+		return (PyObject*)result;
+	}
+	Py_RETURN_NOTIMPLEMENTED;
+}
+
+static PyObject* crn_vector_sub(PyObject* left, PyObject* right){
+	if(!PyObject_TypeCheck(left, &crn_vector_type))
+		Py_RETURN_NOTIMPLEMENTED;
+	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
+	if(PyObject_TypeCheck(right, &crn_vector_type)){
+		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_sub(vector1, vector2);
+		return (PyObject*)result;
+	}
+	if(PyFloat_Check(right) || PyLong_Check(right)){
+		float scalar = (float)PyFloat_AsDouble(right);
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_sub_scalar(vector1, scalar);
+		return (PyObject*)result;
+	}
+	Py_RETURN_NOTIMPLEMENTED;
+}
+
+static PyObject* crn_vector_mul(PyObject* left, PyObject* right){
+	if(PyFloat_Check(left) || PyLong_Check(left)){
+		float scalar = (float)PyFloat_AsDouble(left);
+		struct Vector* vector = ((struct CrunumVector*)right)->vector;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_mul_scalar(vector, scalar);
+		return (PyObject*)result;
+	}
+	if(!PyObject_TypeCheck(left, &crn_vector_type))
+		Py_RETURN_NOTIMPLEMENTED;
+	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
+	if(PyObject_TypeCheck(right, &crn_vector_type)){
+		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_mul(vector1, vector2);
+		return (PyObject*)result;
+	}
+	if(PyObject_TypeCheck(right, &crn_matrix_type)){
+		struct Matrix* matrix = ((struct CrunumMatrix*)right)->matrix;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_mul_matrix(vector1, matrix);
+		return (PyObject*)result;
+	}
+	if(PyFloat_Check(right) || PyLong_Check(right)){
+		float scalar = (float)PyFloat_AsDouble(right);
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_mul_scalar(vector1, scalar);
+		return (PyObject*)result;
+	}
+	Py_RETURN_NOTIMPLEMENTED;
+}
+
+static PyObject* crn_vector_div(PyObject* left, PyObject* right){
+	if(!PyObject_TypeCheck(left, &crn_vector_type))
+		Py_RETURN_NOTIMPLEMENTED;
+	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
+	if(PyObject_TypeCheck(right, &crn_vector_type)){
+		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_div(vector1, vector2);
+		return (PyObject*)result;
+	}
+	if(PyFloat_Check(right) || PyLong_Check(right)){
+		float scalar = (float)PyFloat_AsDouble(right);
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = vector_div_scalar(vector1, scalar);
+		return (PyObject*)result;
+	}
+	Py_RETURN_NOTIMPLEMENTED;
+}
+
+PyMethodDef crn_vector_methods[] = {
+	{"new", crn_vector_new, METH_VARARGS,
 		"Params: len,\n"
 		"Return: Vector,\n"
 		"Desc: Create a new vector\n"
 		"Example: crn.vector.new(10)"
 	},
-	{"randinit", py_vector_randinit, METH_VARARGS,
+	{"randinit", crn_vector_randinit, METH_VARARGS,
 		"Params: len,\n"
 		"Return: Vector,\n"
 		"Desc: Create a new randomized vector\n"
 		"Example: crn.vector.randinit(10)"
 	},
-	{"from", py_vector_from, METH_VARARGS,
+	{"from", crn_vector_from, METH_VARARGS,
 		"Params: list,\n"
 		"Return: Vector,\n"
 		"Desc: Create a new vector based of the list given by the user\n"
 		"Example: crn.vector.from([1, 2.3])"
 	},
-	{"push", (PyCFunction)py_vector_push, METH_VARARGS,
+	{"push", (PyCFunction)crn_vector_push, METH_VARARGS,
 		"Params: value,\n"
 		"Return: None,\n"
 		"Desc: Push value to vector\n"
 		"Example: vec_var.push(5.5)"
 	},
-	{"pop", (PyCFunction)py_vector_pop, METH_NOARGS,
+	{"pop", (PyCFunction)crn_vector_pop, METH_NOARGS,
 		"Params: None,\n"
 		"Return: float,\n"
 		"Desc: Pop value from vector\n"
@@ -161,31 +266,39 @@ PyMethodDef py_vector_methods[] = {
 	{NULL, NULL, 0, NULL},
 };
 
-static PyMappingMethods py_vector_type_as_mapping = {
-	.mp_subscript = py_vector_get,
-	.mp_ass_subscript = py_vector_set,
+static PyMappingMethods crn_vector_as_mapping = {
+	.mp_subscript = crn_vector_get,
+	.mp_ass_subscript = crn_vector_set,
 };
 
-PyTypeObject py_vector_type = {
+static PyNumberMethods crn_vector_as_number = {
+	.nb_add = crn_vector_add,
+	.nb_subtract = crn_vector_sub,
+	.nb_multiply = crn_vector_mul,
+	.nb_divmod = crn_vector_div,
+};
+
+PyTypeObject crn_vector_type = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 	.tp_name = "crunum.vector.Vector",
-	.tp_basicsize = sizeof(struct PyVector),
+	.tp_basicsize = sizeof(struct CrunumVector),
 	.tp_itemsize = 0,
 	.tp_flags = Py_TPFLAGS_DEFAULT,
 	.tp_new = PyType_GenericNew,
-	.tp_dealloc = (destructor)py_vector_free,
-	.tp_methods = py_vector_methods,
-	.tp_str = py_vector_str,
-	.tp_as_mapping = &py_vector_type_as_mapping,
-	.tp_getattro = py_vector_get_attro,
+	.tp_dealloc = (destructor)crn_vector_free,
+	.tp_methods = crn_vector_methods,
+	.tp_str = crn_vector_str,
+	.tp_as_mapping = &crn_vector_as_mapping,
+	.tp_as_number = &crn_vector_as_number,
+	.tp_getattro = crn_vector_get_attro,
 };
 
-PyModuleDef py_vector_def = {
+PyModuleDef crn_vector_def = {
 	PyModuleDef_HEAD_INIT,
 	"vector",
 	"Vector submodule",
 	-1,
-	py_vector_methods,
+	crn_vector_methods,
 	NULL,
 	NULL,
 	NULL,

@@ -127,6 +127,70 @@ struct Vector* matrix_pop_col(struct Matrix* matrix){
 	return matrix_col(matrix, --matrix->cols);
 }
 
+struct Matrix* matrix_add(struct Matrix* matrix1, struct Matrix* matrix2){
+	struct Matrix* result = matrix_new(matrix1->rows, matrix1->cols);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4){
+		float32x4_t vmatrix1 = vld1q_f32(matrix1->values + i);
+		float32x4_t vmatrix2 = vld1q_f32(matrix2->values + i);
+		float32x4_t vres = vaddq_f32(vmatrix1, vmatrix2);
+		vst1q_f32(result->values + i, vres);
+	}
+#endif
+	for(; i < matrix1->rows * matrix1->cols; i++)
+		result->values[i] = matrix1->values[i] + matrix2->values[i];
+	return result;
+}
+
+struct Matrix* matrix_add_scalar(struct Matrix* matrix, float scalar){
+	struct Matrix* result = matrix_new(matrix->rows, matrix->cols);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4){
+		float32x4_t vmatrix = vld1q_f32(matrix->values + i);
+		float32x4_t vres = vmulq_f32(vmatrix, vscalar);
+		vst1q_f32(result->values + i, vres);
+	}
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		result->values[i] = matrix->values[i] + scalar;
+	return result;
+}
+
+struct Matrix* matrix_sub(struct Matrix* matrix1, struct Matrix* matrix2){
+	struct Matrix* result = matrix_new(matrix1->rows, matrix1->cols);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4){
+		float32x4_t vmatrix1 = vld1q_f32(matrix1->values + i);
+		float32x4_t vmatrix2 = vld1q_f32(matrix2->values + i);
+		float32x4_t vres = vsubq_f32(vmatrix1, vmatrix2);
+		vst1q_f32(result->values + i, vres);
+	}
+#endif
+	for(; i < matrix1->rows * matrix1->cols; i++)
+		result->values[i] = matrix1->values[i] - matrix2->values[i];
+	return result;
+}
+
+struct Matrix* matrix_sub_scalar(struct Matrix* matrix, float scalar){
+	struct Matrix* result = matrix_new(matrix->rows, matrix->cols);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4){
+		float32x4_t vmatrix = vld1q_f32(matrix->values + i);
+		float32x4_t vres = vsubq_f32(vmatrix, vscalar);
+		vst1q_f32(result->values + i, vres);
+	}
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		result->values[i] = matrix->values[i] - scalar;
+	return result;
+}
+
 struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2){
 	struct Matrix* result = matrix_new(matrix1->rows, matrix2->cols);
 	for(uint i = 0; i < matrix1->rows; i++)
@@ -182,37 +246,38 @@ struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector){
 	return result;
 }
 
-struct Matrix* matrix_add(struct Matrix* matrix1, struct Matrix* matrix2){
+struct Matrix* matrix_div(struct Matrix* matrix1, struct Matrix* matrix2){
 	struct Matrix* result = matrix_new(matrix1->rows, matrix1->cols);
 	uint i = 0;
 #if defined(__ARM_NEON)
 	for(; i + 4 <= matrix1->rows * matrix1->cols; i += 4){
 		float32x4_t vmatrix1 = vld1q_f32(matrix1->values + i);
 		float32x4_t vmatrix2 = vld1q_f32(matrix2->values + i);
-		float32x4_t vres = vaddq_f32(vmatrix1, vmatrix2);
+		float32x4_t vres = vdivq_f32(vmatrix1, vmatrix2);
 		vst1q_f32(result->values + i, vres);
 	}
 #endif
 	for(; i < matrix1->rows * matrix1->cols; i++)
-		result->values[i] = matrix1->values[i] + matrix2->values[i];
+		result->values[i] = matrix1->values[i] / matrix2->values[i];
 	return result;
 }
 
-struct Matrix* matrix_add_scalar(struct Matrix* matrix, float scalar){
+struct Matrix* matrix_div_scalar(struct Matrix* matrix, float scalar){
 	struct Matrix* result = matrix_new(matrix->rows, matrix->cols);
 	uint i = 0;
 #if defined(__ARM_NEON)
 	float32x4_t vscalar = vdupq_n_f32(scalar);
 	for(; i + 4 <= matrix->rows * matrix->cols; i += 4){
 		float32x4_t vmatrix = vld1q_f32(matrix->values + i);
-		float32x4_t vres = vmulq_f32(vmatrix, vscalar);
+		float32x4_t vres = vdivq_f32(vmatrix, vscalar);
 		vst1q_f32(result->values + i, vres);
 	}
 #endif
 	for(; i < matrix->rows * matrix->cols; i++)
-		result->values[i] = matrix->values[i] + scalar;
+		result->values[i] = matrix->values[i] / scalar;
 	return result;
 }
+
 
 struct Matrix* matrix_pow(struct Matrix* matrix, int exp, uint* invertible){
 	struct Matrix* result = matrix_identity(matrix->rows);
@@ -444,6 +509,90 @@ uint matrix_le(struct Matrix* matrix1, struct Matrix* matrix2){
 #endif
 	for(; i < matrix1->rows * matrix1->cols; i++)
 		if(matrix1->values[i] > matrix2->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_eq_scalar(struct Matrix* matrix, float scalar){
+	uint i = 0;
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4)
+		if(is_lanes_neq(vld1q_f32(matrix->values + i), vscalar))
+			return 0;
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		if(matrix->values[i] != matrix->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_neq_scalar(struct Matrix* matrix, float scalar){
+	uint i = 0;
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4)
+		if(is_lanes_eq(vld1q_f32(matrix->values + i), vscalar))
+			return 0;
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		if(matrix->values[i] == matrix->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_gt_scalar(struct Matrix* matrix, float scalar){
+	uint i = 0;
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4)
+		if(is_lanes_le(vld1q_f32(matrix->values + i), vscalar))
+			return 0;
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		if(matrix->values[i] <= matrix->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_ge_scalar(struct Matrix* matrix, float scalar){
+	uint i = 0;
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4)
+		if(is_lanes_lt(vld1q_f32(matrix->values + i), vscalar))
+			return 0;
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		if(matrix->values[i] < matrix->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_lt_scalar(struct Matrix* matrix, float scalar){
+	uint i = 0;
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4)
+		if(is_lanes_ge(vld1q_f32(matrix->values + i), vscalar))
+			return 0;
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		if(matrix->values[i] >= matrix->values[i])
+			return 0;
+	return 1;
+}
+
+uint matrix_le_scalar(struct Matrix* matrix, float scalar){
+	uint i = 0;
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4)
+		if(is_lanes_gt(vld1q_f32(matrix->values + i), vscalar))
+			return 0;
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		if(matrix->values[i] > matrix->values[i])
 			return 0;
 	return 1;
 }
