@@ -1,26 +1,15 @@
 import sys
-import pydoc
-import subprocess
 sys.path = ['']
 
 import crunum as crn
 
-print(f"Version: {crn.__version__}")
+vec1 = crn.vector.new(2)
 
-vec = crn.vector.new(10)
+assert vec1 == 0, f"should be all 0, error={vec1}"
 
-print(vec)
+vec1[0] = 2.2
+vec1[1] = 3.3
 
-empty_vec = crn.vector.new(0)
-
-empty_vec.push(5)
-empty_vec.push(6)
-empty_vec.push(11.4)
-
-print(empty_vec)
-
-print(empty_vec.pop())
-
-print(empty_vec)
+assert vec1 == crn.vector.from_list([2.2, 3.3]), f"should be [2.2, 3.3], error={vec1}"
 
 print("[SUCCESS]")

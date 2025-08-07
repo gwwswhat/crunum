@@ -1,26 +1,20 @@
 import sys
-import pydoc
-import subprocess
-import math
 sys.path = ['']
 
 import crunum as crn
 
-mat1 = crn.matrix.new(10, 10)
+mat1 = crn.matrix.new(3, 3)
 
 assert mat1 == 0, f"mat1 isn't zero, error={mat1}"
 
 mat1.set(0, 0, 2.2)
+mat1.set(2, 1, 3.4)
+mat1.set(1, 0, 11.55)
 
-assert math.isclose(mat1.get(0, 0), 2.2, rel_tol=1e-6), f"should be 2.2, error={mat1.get(0, 0)}"
+assert mat1 == crn.matrix.from_list([[2.2, 0, 0], [11.55, 0, 0], [0, 3.4, 0]]), f"should be [[2.2, 0, 0], [11.55, 0, 0], [0, 3.4, 0]], error={mat1}"
 
-mat1.set(2, 3, 3.4)
-mat1.set(5, 6, 11.55)
-
-mat2 = crn.matrix.randinit(10, 10)
-
-assert mat2.rows == 10, f"mat2 row size isn't 10, error={mat2.rows}"
-assert mat2.cols == 10, f"mat2 col size isn't 10, error={mat2.rows}"
+assert mat1.rows == 3, f"mat2 row size isn't 3, error={mat2.rows}"
+assert mat1.cols == 3, f"mat2 col size isn't 3, error={mat2.rows}"
 
 fibo = crn.matrix.new(2, 2)
 
