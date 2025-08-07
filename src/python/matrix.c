@@ -9,7 +9,7 @@
 
 #include "python.h"
 
-static PyObject* crn_matrix_new(PyObject* self, PyObject* args){
+static struct CrunumMatrix* crn_matrix_new(PyObject* self, PyObject* args){
 	(void)self;
 	uint rows, cols;
 	if(!PyArg_ParseTuple(args, "II", &rows, &cols))
@@ -18,10 +18,10 @@ static PyObject* crn_matrix_new(PyObject* self, PyObject* args){
 	if(!crn_matrix)
 		return NULL;
 	crn_matrix->matrix = matrix_new(rows, cols);
-	return (PyObject*)crn_matrix;
+	return crn_matrix;
 }
 
-static PyObject* crn_matrix_randinit(PyObject* self, PyObject* args){
+static struct CrunumMatrix* crn_matrix_randinit(PyObject* self, PyObject* args){
 	(void)self;
 	uint rows, cols;
 	if(!PyArg_ParseTuple(args, "II", &rows, &cols))
@@ -30,10 +30,10 @@ static PyObject* crn_matrix_randinit(PyObject* self, PyObject* args){
 	if(!crn_matrix)
 		return NULL;
 	crn_matrix->matrix = matrix_randinit(rows, cols);
-	return (PyObject*)crn_matrix;
+	return crn_matrix;
 }
 
-static PyObject* crn_matrix_from(PyObject* self, PyObject* args){
+static struct CrunumMatrix* crn_matrix_from(PyObject* self, PyObject* args){
 	(void)self;
 	PyObject* outer_list;
 	if(!PyArg_ParseTuple(args, "O", &outer_list))
@@ -78,10 +78,10 @@ static PyObject* crn_matrix_from(PyObject* self, PyObject* args){
 			matrix_set(crn_matrix->matrix, i, j, (float)PyFloat_AsDouble(item));
 		}
 	}
-	return (PyObject*)crn_matrix;
+	return crn_matrix;
 }
 
-static PyObject* crn_matrix_identity(PyObject* self, PyObject* args){
+static struct CrunumMatrix* crn_matrix_identity(PyObject* self, PyObject* args){
 	(void)self;
 	uint size;
 	if(!PyArg_ParseTuple(args, "I", &size))
@@ -90,7 +90,7 @@ static PyObject* crn_matrix_identity(PyObject* self, PyObject* args){
 	if(!crn_matrix)
 		return NULL;
 	crn_matrix->matrix = matrix_identity(size);
-	return (PyObject*)crn_matrix;
+	return crn_matrix;
 }
 
 static void crn_matrix_free(struct CrunumMatrix* self){
@@ -306,6 +306,10 @@ static PyObject* crn_matrix_add(PyObject* left, PyObject* right){
 	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
 	if(PyObject_TypeCheck(right, &crn_matrix_type)){
 		struct Matrix* matrix2 = ((struct CrunumMatrix*)right)->matrix;
+		if(matrix1->rows * matrix1->cols != matrix2->rows * matrix2->rows){
+			PyErr_SetString(PyExc_ValueError, "Matrix size doesn't match another matrix size");
+			return NULL;
+		}
 		struct CrunumMatrix* result = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
 		result->matrix = matrix_add(matrix1, matrix2);
 		return (PyObject*)result;
@@ -325,6 +329,10 @@ static PyObject* crn_matrix_sub(PyObject* left, PyObject* right){
 	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
 	if(PyObject_TypeCheck(right, &crn_matrix_type)){
 		struct Matrix* matrix2 = ((struct CrunumMatrix*)right)->matrix;
+		if(matrix1->rows * matrix1->cols != matrix2->rows * matrix2->rows){
+			PyErr_SetString(PyExc_ValueError, "Matrix size doesn't match another matrix size");
+			return NULL;
+		}
 		struct CrunumMatrix* result = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
 		result->matrix = matrix_sub(matrix1, matrix2);
 		return (PyObject*)result;
@@ -351,12 +359,20 @@ static PyObject* crn_matrix_mul(PyObject* left, PyObject* right){
 	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
 	if(PyObject_TypeCheck(right, &crn_matrix_type)){
 		struct Matrix* matrix2 = ((struct CrunumMatrix*)right)->matrix;
+		if(matrix1->rows != matrix2->cols){
+			PyErr_SetString(PyExc_ValueError, "Matrix row size doesn't match another matrix col size");
+			return NULL;
+		}
 		struct CrunumMatrix* result = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
 		result->matrix = matrix_mul(matrix1, matrix2);
 		return (PyObject*)result;
 	}
 	if(PyObject_TypeCheck(right, &crn_vector_type)){
 		struct Vector* vector = ((struct CrunumVector*)right)->vector;
+		if(matrix1->cols != vector->len){
+			PyErr_SetString(PyExc_ValueError, "Matrix col size doesn't match vector length");
+			return NULL;
+		}
 		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
 		result->vector = matrix_mul_vector(matrix1, vector);
 		return (PyObject*)result;
@@ -376,6 +392,10 @@ static PyObject* crn_matrix_div(PyObject* left, PyObject* right){
 	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
 	if(PyObject_TypeCheck(right, &crn_matrix_type)){
 		struct Matrix* matrix2 = ((struct CrunumMatrix*)right)->matrix;
+		if(matrix1->rows * matrix1->cols != matrix2->rows * matrix2->rows){
+			PyErr_SetString(PyExc_ValueError, "Matrix size doesn't match another matrix size");
+			return NULL;
+		}
 		struct CrunumMatrix* result = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
 		result->matrix = matrix_div(matrix1, matrix2);
 		return (PyObject*)result;
@@ -410,26 +430,121 @@ static PyObject* crn_matrix_pow(PyObject* base, PyObject* exp, PyObject* mod){
 	return (PyObject*)result;
 }
 
+static PyObject* crn_matrix_compare(PyObject* left, PyObject* right, int op){
+	uint cmp_result;
+	if(PyFloat_Check(left) || PyLong_Check(left)){
+		float scalar = (float)PyFloat_AsDouble(left);
+		struct Matrix* matrix = ((struct CrunumMatrix*)right)->matrix;
+		switch(op){
+			case Py_EQ:
+				cmp_result = matrix_eq_scalar(matrix, scalar);
+				break;
+			case Py_NE:
+				cmp_result = matrix_neq_scalar(matrix, scalar);
+				break;
+			case Py_LT:
+				cmp_result = matrix_lt_scalar(matrix, scalar);
+				break;
+			case Py_LE:
+				cmp_result = matrix_le_scalar(matrix, scalar);
+				break;
+			case Py_GT:
+				cmp_result = matrix_gt_scalar(matrix, scalar);
+				break;
+			case Py_GE:
+				cmp_result = matrix_ge_scalar(matrix, scalar);
+				break;
+			default:
+				Py_RETURN_NOTIMPLEMENTED;
+		}
+		if(cmp_result)
+			Py_RETURN_TRUE;
+		Py_RETURN_FALSE;
+	}
+	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
+	if(PyObject_TypeCheck(right, &crn_matrix_type)){
+		struct Matrix* matrix2 = ((struct CrunumMatrix*)right)->matrix;
+		if(matrix1->rows * matrix1->cols != matrix2->rows * matrix2->rows){
+			PyErr_SetString(PyExc_ValueError, "Matrix size doesn't match another matrix size");
+			return NULL;
+		}
+		switch(op){
+			case Py_EQ:
+				cmp_result = matrix_eq(matrix1, matrix2);
+				break;
+			case Py_NE:
+				cmp_result = matrix_neq(matrix1, matrix2);
+				break;
+			case Py_LT:
+				cmp_result = matrix_lt(matrix1, matrix2);
+				break;
+			case Py_LE:
+				cmp_result = matrix_le(matrix1, matrix2);
+				break;
+			case Py_GT:
+				cmp_result = matrix_gt(matrix1, matrix2);
+				break;
+			case Py_GE:
+				cmp_result = matrix_ge(matrix1, matrix2);
+				break;
+			default:
+				Py_RETURN_NOTIMPLEMENTED;
+		}
+		if(cmp_result)
+			Py_RETURN_TRUE;
+		Py_RETURN_FALSE;
+	}
+	if(PyFloat_Check(right) || PyLong_Check(right)){
+		float scalar = (float)PyFloat_AsDouble(right);
+		switch(op){
+			case Py_EQ:
+				cmp_result = matrix_eq_scalar(matrix1, scalar);
+				break;
+			case Py_NE:
+				cmp_result = matrix_neq_scalar(matrix1, scalar);
+				break;
+			case Py_LT:
+				cmp_result = matrix_lt_scalar(matrix1, scalar);
+				break;
+			case Py_LE:
+				cmp_result = matrix_le_scalar(matrix1, scalar);
+				break;
+			case Py_GT:
+				cmp_result = matrix_gt_scalar(matrix1, scalar);
+				break;
+			case Py_GE:
+				cmp_result = matrix_ge_scalar(matrix1, scalar);
+				break;
+			default:
+				Py_RETURN_NOTIMPLEMENTED;
+		}
+		if(cmp_result)
+			Py_RETURN_TRUE;
+		Py_RETURN_FALSE;
+	}
+	Py_RETURN_NOTIMPLEMENTED;
+}
+
 PyMethodDef crn_matrix_methods[] = {
-	{"new", crn_matrix_new, METH_VARARGS,
+	{"new", (PyCFunction)crn_matrix_new, METH_VARARGS,
 		"Params: rows, cols,\n"
 		"Return: Matrix,\n"
 		"Desc: Create a new matrix\n"
 		"Example: crn.matrix.new(10, 10)"
 	},
-	{"randinit", crn_matrix_randinit, METH_VARARGS,
+	{"randinit", (PyCFunction)crn_matrix_randinit, METH_VARARGS,
 		"Params: rows, cols,\n"
 		"Return: Matrix,\n"
 		"Desc: Create a new randomized matrix with range 0-1\n"
 		"Example: crn.matrix.randinit(2, 10)"
 	},
-	{"from", crn_matrix_from, METH_VARARGS,
+	{"from", (PyCFunction)crn_matrix_from, METH_VARARGS,
 		"Params: 2d list,\n"
 		"Return: Matrix,\n"
 		"Desc: Create a new matrix based of the 2d list given by the user\n"
 		"Example: crn.matrix.from([[2, 2]])"
 	},
-	{"identity", crn_matrix_identity, METH_VARARGS,
+	{"identity", (PyCFunction)ccrn_matrix_identity, METH_VARARGS,
 		"Params: size,\n"
 		"Return: Matrix,\n"
 		"Desc: Create a new identity matrix\n"
@@ -524,6 +639,7 @@ PyTypeObject crn_matrix_type = {
 	.tp_str = crn_matrix_str,
 	.tp_as_mapping = NULL,
 	.tp_as_number = &crn_matrix_as_number,
+	.tp_richcompare = crn_matrix_compare,
 	.tp_getattro = crn_matrix_get_attro,
 };
 

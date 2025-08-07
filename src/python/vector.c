@@ -149,6 +149,10 @@ static PyObject* crn_vector_add(PyObject* left, PyObject* right){
 	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
 	if(PyObject_TypeCheck(right, &crn_vector_type)){
 		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		if(vector1->len != vector2->len){
+			PyErr_SetString(PyExc_ValueError, "Vector length doesn't match another vector length");
+			return NULL;
+		}
 		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
 		result->vector = vector_add(vector1, vector2);
 		return (PyObject*)result;
@@ -168,6 +172,10 @@ static PyObject* crn_vector_sub(PyObject* left, PyObject* right){
 	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
 	if(PyObject_TypeCheck(right, &crn_vector_type)){
 		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		if(vector1->len != vector2->len){
+			PyErr_SetString(PyExc_ValueError, "Vector length doesn't match another vector length");
+			return NULL;
+		}
 		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
 		result->vector = vector_sub(vector1, vector2);
 		return (PyObject*)result;
@@ -194,12 +202,20 @@ static PyObject* crn_vector_mul(PyObject* left, PyObject* right){
 	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
 	if(PyObject_TypeCheck(right, &crn_vector_type)){
 		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		if(vector1->len != vector2->len){
+			PyErr_SetString(PyExc_ValueError, "Vector length doesn't match another vector length");
+			return NULL;
+		}
 		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
 		result->vector = vector_mul(vector1, vector2);
 		return (PyObject*)result;
 	}
 	if(PyObject_TypeCheck(right, &crn_matrix_type)){
 		struct Matrix* matrix = ((struct CrunumMatrix*)right)->matrix;
+		if(vector1->len != matrix->rows){
+			PyErr_SetString(PyExc_ValueError, "Vector length doesn't match matrix row size");
+			return NULL;
+		}
 		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
 		result->vector = vector_mul_matrix(vector1, matrix);
 		return (PyObject*)result;
@@ -219,6 +235,10 @@ static PyObject* crn_vector_div(PyObject* left, PyObject* right){
 	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
 	if(PyObject_TypeCheck(right, &crn_vector_type)){
 		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		if(vector1->len != vector2->len){
+			PyErr_SetString(PyExc_ValueError, "Vector length doesn't match another vector length");
+			return NULL;
+		}
 		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
 		result->vector = vector_div(vector1, vector2);
 		return (PyObject*)result;
@@ -232,20 +252,115 @@ static PyObject* crn_vector_div(PyObject* left, PyObject* right){
 	Py_RETURN_NOTIMPLEMENTED;
 }
 
+static PyObject* crn_vector_compare(PyObject* left, PyObject* right, int op){
+	uint cmp_result;
+	if(PyFloat_Check(left) || PyLong_Check(left)){
+		float scalar = (float)PyFloat_AsDouble(left);
+		struct Vector* vector = ((struct CrunumVector*)right)->vector;
+		switch(op){
+			case Py_EQ:
+				cmp_result = vector_eq_scalar(vector, scalar);
+				break;
+			case Py_NE:
+				cmp_result = vector_neq_scalar(vector, scalar);
+				break;
+			case Py_LT:
+				cmp_result = vector_lt_scalar(vector, scalar);
+				break;
+			case Py_LE:
+				cmp_result = vector_le_scalar(vector, scalar);
+				break;
+			case Py_GT:
+				cmp_result = vector_gt_scalar(vector, scalar);
+				break;
+			case Py_GE:
+				cmp_result = vector_ge_scalar(vector, scalar);
+				break;
+			default:
+				Py_RETURN_NOTIMPLEMENTED;
+		}
+		if(cmp_result)
+			Py_RETURN_TRUE;
+		Py_RETURN_FALSE;
+	}
+	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
+	if(PyObject_TypeCheck(right, &crn_vector_type)){
+		struct Vector* vector2 = ((struct CrunumVector*)right)->vector;
+		if(vector1->len != vector2->len){
+			PyErr_SetString(PyExc_ValueError, "Vector length doesn't match another vector length");
+			return NULL;
+		}
+		switch(op){
+			case Py_EQ:
+				cmp_result = vector_eq(vector1, vector2);
+				break;
+			case Py_NE:
+				cmp_result = vector_neq(vector1, vector2);
+				break;
+			case Py_LT:
+				cmp_result = vector_lt(vector1, vector2);
+				break;
+			case Py_LE:
+				cmp_result = vector_le(vector1, vector2);
+				break;
+			case Py_GT:
+				cmp_result = vector_gt(vector1, vector2);
+				break;
+			case Py_GE:
+				cmp_result = vector_ge(vector1, vector2);
+				break;
+			default:
+				Py_RETURN_NOTIMPLEMENTED;
+		}
+		if(cmp_result)
+			Py_RETURN_TRUE;
+		Py_RETURN_FALSE;
+	}
+	if(PyFloat_Check(right) || PyLong_Check(right)){
+		float scalar = (float)PyFloat_AsDouble(right);
+		switch(op){
+			case Py_EQ:
+				cmp_result = vector_eq_scalar(vector1, scalar);
+				break;
+			case Py_NE:
+				cmp_result = vector_neq_scalar(vector1, scalar);
+				break;
+			case Py_LT:
+				cmp_result = vector_lt_scalar(vector1, scalar);
+				break;
+			case Py_LE:
+				cmp_result = vector_le_scalar(vector1, scalar);
+				break;
+			case Py_GT:
+				cmp_result = vector_gt_scalar(vector1, scalar);
+				break;
+			case Py_GE:
+				cmp_result = vector_ge_scalar(vector1, scalar);
+				break;
+			default:
+				Py_RETURN_NOTIMPLEMENTED;
+		}
+		if(cmp_result)
+			Py_RETURN_TRUE;
+		Py_RETURN_FALSE;
+	}
+	Py_RETURN_NOTIMPLEMENTED;
+}
+
 PyMethodDef crn_vector_methods[] = {
-	{"new", crn_vector_new, METH_VARARGS,
+	{"new", (PyCFunction)crn_vector_new, METH_VARARGS,
 		"Params: len,\n"
 		"Return: Vector,\n"
 		"Desc: Create a new vector\n"
 		"Example: crn.vector.new(10)"
 	},
-	{"randinit", crn_vector_randinit, METH_VARARGS,
+	{"randinit", (PyCFunction)ccrn_vector_randinit, METH_VARARGS,
 		"Params: len,\n"
 		"Return: Vector,\n"
 		"Desc: Create a new randomized vector\n"
 		"Example: crn.vector.randinit(10)"
 	},
-	{"from", crn_vector_from, METH_VARARGS,
+	{"from", (PyCFunction)ccrn_vector_from, METH_VARARGS,
 		"Params: list,\n"
 		"Return: Vector,\n"
 		"Desc: Create a new vector based of the list given by the user\n"
@@ -290,6 +405,7 @@ PyTypeObject crn_vector_type = {
 	.tp_str = crn_vector_str,
 	.tp_as_mapping = &crn_vector_as_mapping,
 	.tp_as_number = &crn_vector_as_number,
+	.tp_richcompare = crn_vector_compare,
 	.tp_getattro = crn_vector_get_attro,
 };
 

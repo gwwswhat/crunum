@@ -34,3 +34,5 @@ fibo.set(0, 1, 1)
 fibo.set(1, 0, 1)
 
 print(f"F(5): {fibo ** 5}")
+
+print("Identity == Identity: ", crn.matrix.identity(2) == crn.matrix.identity(2))
