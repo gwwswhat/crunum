@@ -359,8 +359,8 @@ static PyObject* crn_matrix_mul(PyObject* left, PyObject* right){
 	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
 	if(PyObject_TypeCheck(right, &crn_matrix_type)){
 		struct Matrix* matrix2 = ((struct CrunumMatrix*)right)->matrix;
-		if(matrix1->rows != matrix2->cols){
-			PyErr_SetString(PyExc_ValueError, "Matrix row size doesn't match another matrix col size");
+		if(matrix1->cols != matrix2->rows){
+			PyErr_SetString(PyExc_ValueError, "Matrix col size doesn't match another matrix row size");
 			return NULL;
 		}
 		struct CrunumMatrix* result = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
