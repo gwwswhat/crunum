@@ -44,3 +44,5 @@ empty_vec:push(44)
 print("Push: ", empty_vec)
 
 print("Last number: ", empty_vec:pop())
+
+print("[SUCCESS]")

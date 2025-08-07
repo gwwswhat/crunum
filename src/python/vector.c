@@ -9,7 +9,7 @@
 
 #include "python.h"
 
-static PyObject* crn_vector_new(PyObject* self, PyObject* args){
+static struct CrunumVector* crn_vector_new(PyObject* self, PyObject* args){
 	(void)self;
 	uint len;
 	if(!PyArg_ParseTuple(args, "I", &len))
@@ -18,10 +18,10 @@ static PyObject* crn_vector_new(PyObject* self, PyObject* args){
 	if(!crn_vector)
 		return NULL;
 	crn_vector->vector = vector_new(len);
-	return (PyObject*)crn_vector;
+	return crn_vector;
 }
 
-static PyObject* crn_vector_randinit(PyObject* self, PyObject* args){
+static struct CrunumVector* crn_vector_randinit(PyObject* self, PyObject* args){
 	(void)self;
 	uint len;
 	if(!PyArg_ParseTuple(args, "I", &len))
@@ -30,10 +30,10 @@ static PyObject* crn_vector_randinit(PyObject* self, PyObject* args){
 	if(!crn_vector)
 		return NULL;
 	crn_vector->vector = vector_randinit(len);
-	return (PyObject*)crn_vector;
+	return crn_vector;
 }
 
-static PyObject* crn_vector_from(PyObject* self, PyObject* args){
+static struct CrunumVector* crn_vector_from_list(PyObject* self, PyObject* args){
 	(void)self;
 	PyObject* list;
 	if(!PyArg_ParseTuple(args, "O", &list))
@@ -57,7 +57,7 @@ static PyObject* crn_vector_from(PyObject* self, PyObject* args){
 		}
 		crn_vector->vector->values[i] = (float)PyFloat_AsDouble(item);
 	}
-	return (PyObject*)crn_vector;
+	return crn_vector;
 }
 
 static PyObject* crn_vector_get_attro(PyObject* self, PyObject* attr_name){
@@ -354,17 +354,17 @@ PyMethodDef crn_vector_methods[] = {
 		"Desc: Create a new vector\n"
 		"Example: crn.vector.new(10)"
 	},
-	{"randinit", (PyCFunction)ccrn_vector_randinit, METH_VARARGS,
+	{"randinit", (PyCFunction)crn_vector_randinit, METH_VARARGS,
 		"Params: len,\n"
 		"Return: Vector,\n"
 		"Desc: Create a new randomized vector\n"
 		"Example: crn.vector.randinit(10)"
 	},
-	{"from", (PyCFunction)ccrn_vector_from, METH_VARARGS,
+	{"from_list", (PyCFunction)crn_vector_from_list, METH_VARARGS,
 		"Params: list,\n"
 		"Return: Vector,\n"
 		"Desc: Create a new vector based of the list given by the user\n"
-		"Example: crn.vector.from([1, 2.3])"
+		"Example: crn.vector.from_list([1, 2.3])"
 	},
 	{"push", (PyCFunction)crn_vector_push, METH_VARARGS,
 		"Params: value,\n"
@@ -390,7 +390,7 @@ static PyNumberMethods crn_vector_as_number = {
 	.nb_add = crn_vector_add,
 	.nb_subtract = crn_vector_sub,
 	.nb_multiply = crn_vector_mul,
-	.nb_divmod = crn_vector_div,
+	.nb_true_divide = crn_vector_div,
 };
 
 PyTypeObject crn_vector_type = {

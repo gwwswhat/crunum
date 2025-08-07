@@ -22,3 +22,5 @@ print(empty_vec)
 print(empty_vec.pop())
 
 print(empty_vec)
+
+print("[SUCCESS]")

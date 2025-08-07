@@ -33,7 +33,7 @@ static struct CrunumMatrix* crn_matrix_randinit(PyObject* self, PyObject* args){
 	return crn_matrix;
 }
 
-static struct CrunumMatrix* crn_matrix_from(PyObject* self, PyObject* args){
+static struct CrunumMatrix* crn_matrix_from_list(PyObject* self, PyObject* args){
 	(void)self;
 	PyObject* outer_list;
 	if(!PyArg_ParseTuple(args, "O", &outer_list))
@@ -538,13 +538,13 @@ PyMethodDef crn_matrix_methods[] = {
 		"Desc: Create a new randomized matrix with range 0-1\n"
 		"Example: crn.matrix.randinit(2, 10)"
 	},
-	{"from", (PyCFunction)crn_matrix_from, METH_VARARGS,
+	{"from_list", (PyCFunction)crn_matrix_from_list, METH_VARARGS,
 		"Params: 2d list,\n"
 		"Return: Matrix,\n"
 		"Desc: Create a new matrix based of the 2d list given by the user\n"
-		"Example: crn.matrix.from([[2, 2]])"
+		"Example: crn.matrix.from_list([[2, 2]])"
 	},
-	{"identity", (PyCFunction)ccrn_matrix_identity, METH_VARARGS,
+	{"identity", (PyCFunction)crn_matrix_identity, METH_VARARGS,
 		"Params: size,\n"
 		"Return: Matrix,\n"
 		"Desc: Create a new identity matrix\n"
@@ -623,7 +623,7 @@ static PyNumberMethods crn_matrix_as_number = {
 	.nb_add = crn_matrix_add,
 	.nb_subtract = crn_matrix_sub,
 	.nb_multiply = crn_matrix_mul,
-	.nb_divmod = crn_matrix_div,
+	.nb_true_divide = crn_matrix_div,
 	.nb_power = crn_matrix_pow,
 };
 
