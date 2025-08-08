@@ -37,11 +37,13 @@ struct Matrix* matrix_add(struct Matrix* matrix1, struct Matrix* matrix2);
 struct Matrix* matrix_add_scalar(struct Matrix* matrix, float scalar);
 struct Matrix* matrix_sub(struct Matrix* matrix1, struct Matrix* matrix2);
 struct Matrix* matrix_sub_scalar(struct Matrix* matrix, float scalar);
+struct Matrix* scalar_sub_matrix(float scalar, struct Matrix* matrix);
 struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2);
 struct Matrix* matrix_mul_scalar(struct Matrix* matrix, float scalar);
 struct Vector* matrix_mul_vector(struct Matrix* matrix, struct Vector* vector);
 struct Matrix* matrix_div(struct Matrix* matrix1, struct Matrix* matrix2);
 struct Matrix* matrix_div_scalar(struct Matrix* matrix, float scalar);
+struct Matrix* scalar_div_matrix(float scalar, struct Matrix* matrix);
 struct Matrix* matrix_pow(struct Matrix* matrix, int exp, uint* invertible);
 struct Matrix* matrix_transpose(struct Matrix* matrix);
 static inline void matrix_reshape(struct Matrix* matrix, 

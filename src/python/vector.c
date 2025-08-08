@@ -167,6 +167,13 @@ static PyObject* crn_vector_add(PyObject* left, PyObject* right){
 }
 
 static PyObject* crn_vector_sub(PyObject* left, PyObject* right){
+	if(PyFloat_Check(left) || PyLong_Check(left)){
+		float scalar = (float)PyFloat_AsDouble(left);
+		struct Vector* vector = ((struct CrunumVector*)right)->vector;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = scalar_sub_vector(scalar, vector);
+		return (PyObject*)result;
+	}
 	if(!PyObject_TypeCheck(left, &crn_vector_type))
 		Py_RETURN_NOTIMPLEMENTED;
 	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
@@ -230,6 +237,13 @@ static PyObject* crn_vector_mul(PyObject* left, PyObject* right){
 }
 
 static PyObject* crn_vector_div(PyObject* left, PyObject* right){
+	if(PyFloat_Check(left) || PyLong_Check(left)){
+		float scalar = (float)PyFloat_AsDouble(left);
+		struct Vector* vector = ((struct CrunumVector*)right)->vector;
+		struct CrunumVector* result = PyObject_New(struct CrunumVector, &crn_vector_type);
+		result->vector = scalar_div_vector(scalar, vector);
+		return (PyObject*)result;
+	}
 	if(!PyObject_TypeCheck(left, &crn_vector_type))
 		Py_RETURN_NOTIMPLEMENTED;
 	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
@@ -280,8 +294,8 @@ static PyObject* crn_vector_compare(PyObject* left, PyObject* right, int op){
 				Py_RETURN_NOTIMPLEMENTED;
 		}
 		if(cmp_result)
-			Py_RETURN_TRUE;
-		Py_RETURN_FALSE;
+			Py_RETURN_FALSE;
+		Py_RETURN_TRUE;
 	}
 	struct Vector* vector1 = ((struct CrunumVector*)left)->vector;
 	if(PyObject_TypeCheck(right, &crn_vector_type)){

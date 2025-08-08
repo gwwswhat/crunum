@@ -165,7 +165,7 @@ static PyObject* crn_matrix_get_attro(PyObject* self, PyObject* attr_name){
 	if(!PyUnicode_CompareWithASCIIString(attr_name, "rows"))
 		return PyLong_FromUnsignedLong((ulong)crn_matrix->matrix->rows);
 	if(!PyUnicode_CompareWithASCIIString(attr_name, "cols"))
-		return PyLong_FromUnsignedLong((ulong)crn_matrix->matrix->rows);
+		return PyLong_FromUnsignedLong((ulong)crn_matrix->matrix->cols);
 	return PyObject_GenericGetAttr(self, attr_name);
 }
 
@@ -188,26 +188,30 @@ static PyObject* crn_matrix_reshape(struct CrunumMatrix* self, PyObject* args){
 	Py_RETURN_NONE;
 }
 
-static PyObject* crn_matrix_inverse(struct CrunumMatrix* self, PyObject* noargs){
+static struct CrunumMatrix* crn_matrix_inverse(struct CrunumMatrix* self, PyObject* noargs){
 	(void)noargs;
 	if(self->matrix->rows != self->matrix->cols){
 		PyErr_SetString(PyExc_ValueError, "Matrix isn't a square");
 		return NULL;
 	}
 	uint invertible;
-	matrix_inverse(self->matrix, &invertible);
+	struct Matrix* temp = matrix_inverse(self->matrix, &invertible);
 	if(!invertible){
 		PyErr_SetString(PyExc_ValueError, "Matrix can't be inversed");
 		return NULL;
 	}
-	Py_RETURN_NONE;
+	struct CrunumMatrix* result = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
+	if(!result)
+		return NULL;
+	result->matrix = temp;
+	return result;
 }
 
 static PyObject* crn_matrix_push_row(struct CrunumMatrix* self, PyObject* args){
 	PyObject* obj;
 	if(!PyArg_ParseTuple(args, "O", &obj))
 		return NULL;
-	if(!PyObject_TypeCheck(obj, &crn_matrix_type)){
+	if(!PyObject_TypeCheck(obj, &crn_vector_type)){
 		PyErr_SetString(PyExc_TypeError, "Expected a vector");
 		return NULL;
 	}
@@ -324,6 +328,13 @@ static PyObject* crn_matrix_add(PyObject* left, PyObject* right){
 }
 
 static PyObject* crn_matrix_sub(PyObject* left, PyObject* right){
+	if(PyFloat_Check(left) || PyLong_Check(left)){
+		float scalar = (float)PyFloat_AsDouble(left);
+		struct Matrix* matrix = ((struct CrunumMatrix*)right)->matrix;
+		struct CrunumMatrix* result = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
+		result->matrix = scalar_sub_matrix(scalar, matrix);
+		return (PyObject*)result;
+	}
 	if(!PyObject_TypeCheck(left, &crn_matrix_type))
 		Py_RETURN_NOTIMPLEMENTED;
 	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
@@ -387,6 +398,13 @@ static PyObject* crn_matrix_mul(PyObject* left, PyObject* right){
 }
 
 static PyObject* crn_matrix_div(PyObject* left, PyObject* right){
+	if(PyFloat_Check(left) || PyLong_Check(left)){
+		float scalar = (float)PyFloat_AsDouble(left);
+		struct Matrix* matrix = ((struct CrunumMatrix*)right)->matrix;
+		struct CrunumMatrix* result = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
+		result->matrix = scalar_div_matrix(scalar, matrix);
+		return (PyObject*)result;
+	}
 	if(!PyObject_TypeCheck(left, &crn_matrix_type))
 		Py_RETURN_NOTIMPLEMENTED;
 	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
@@ -458,13 +476,13 @@ static PyObject* crn_matrix_compare(PyObject* left, PyObject* right, int op){
 				Py_RETURN_NOTIMPLEMENTED;
 		}
 		if(cmp_result)
-			Py_RETURN_TRUE;
-		Py_RETURN_FALSE;
+			Py_RETURN_FALSE;
+		Py_RETURN_TRUE;
 	}
 	struct Matrix* matrix1 = ((struct CrunumMatrix*)left)->matrix;
 	if(PyObject_TypeCheck(right, &crn_matrix_type)){
 		struct Matrix* matrix2 = ((struct CrunumMatrix*)right)->matrix;
-		if(matrix1->rows * matrix1->cols != matrix2->rows * matrix2->rows){
+		if(matrix1->rows * matrix1->cols != matrix2->rows * matrix2->cols){
 			PyErr_SetString(PyExc_ValueError, "Matrix size doesn't match another matrix size");
 			return NULL;
 		}

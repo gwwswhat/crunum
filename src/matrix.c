@@ -41,6 +41,18 @@ struct Matrix* matrix_identity(uint size){
 	return matrix;
 }
 
+static struct Matrix* matrix_copy(struct Matrix* matrix){
+	struct Matrix* copy = matrix_new(matrix->rows, matrix->cols);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4)
+		vst1q_f32(copy->values + i, vld1q_f32(matrix->values + i));
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		copy->values[i] = matrix->values[i];
+	return copy;
+}
+
 void matrix_free(struct Matrix* matrix){
 	free(matrix->values);
 	free(matrix);
@@ -191,6 +203,22 @@ struct Matrix* matrix_sub_scalar(struct Matrix* matrix, float scalar){
 	return result;
 }
 
+struct Matrix* scalar_sub_matrix(float scalar, struct Matrix* matrix){
+	struct Matrix* result = matrix_new(matrix->rows, matrix->cols);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4){
+		float32x4_t vmatrix = vld1q_f32(matrix->values + i);
+		float32x4_t vres = vsubq_f32(vscalar, vmatrix);
+		vst1q_f32(result->values + i, vres);
+	}
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		result->values[i] = scalar - matrix->values[i];
+	return result;
+}
+
 struct Matrix* matrix_mul(struct Matrix* matrix1, struct Matrix* matrix2){
 	struct Matrix* result = matrix_new(matrix1->rows, matrix2->cols);
 	for(uint i = 0; i < matrix1->rows; i++)
@@ -278,6 +306,21 @@ struct Matrix* matrix_div_scalar(struct Matrix* matrix, float scalar){
 	return result;
 }
 
+struct Matrix* scalar_div_matrix(float scalar, struct Matrix* matrix){
+	struct Matrix* result = matrix_new(matrix->rows, matrix->cols);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+	for(; i + 4 <= matrix->rows * matrix->cols; i += 4){
+		float32x4_t vmatrix = vld1q_f32(matrix->values + i);
+		float32x4_t vres = vdivq_f32(vscalar, vmatrix);
+		vst1q_f32(result->values + i, vres);
+	}
+#endif
+	for(; i < matrix->rows * matrix->cols; i++)
+		result->values[i] = scalar / matrix->values[i];
+	return result;
+}
 
 struct Matrix* matrix_pow(struct Matrix* matrix, int exp, uint* invertible){
 	struct Matrix* result = matrix_identity(matrix->rows);
@@ -291,16 +334,17 @@ struct Matrix* matrix_pow(struct Matrix* matrix, int exp, uint* invertible){
 #endif
 	for(; i < matrix->rows * matrix->cols; i++)
 		base->values[i] = matrix->values[i];
+	struct Matrix* temp;
 	if(exp < 0){
 		exp = -exp;
-		matrix_inverse(base, invertible);
+		temp = matrix_inverse(base, invertible);
+		matrix_free(base);
 		if(!*invertible){
 			matrix_free(result);
-			matrix_free(base);
 			return NULL;
 		}
+		base = temp;
 	}
-	struct Matrix* temp;
 	while(exp > 0){
 		if(exp % 2 == 1){
 			temp = matrix_mul(result, base);
@@ -323,7 +367,7 @@ struct Matrix* matrix_transpose(struct Matrix* matrix){
 	return new_matrix;
 }
 
-void matrix_swap_row(struct Matrix* matrix, uint row1, uint row2){
+static void matrix_swap_row(struct Matrix* matrix, uint row1, uint row2){
 	uint i = 0;
 #if defined(__ARM_NEON)
 	for(; i + 4 <= matrix->cols; i += 4){
@@ -340,56 +384,48 @@ void matrix_swap_row(struct Matrix* matrix, uint row1, uint row2){
 	}
 }
 
-void matrix_div_row(struct Matrix* matrix, uint row, float scalar){
+static void matrix_div_row(struct Matrix* matrix, uint row, float scalar){
 	uint i = 0;
 #if defined(__ARM_NEON)
 	float32x4_t vscalar = vdupq_n_f32(scalar);
 	for(; i + 4 <= matrix->cols; i += 4){
 		float32x4_t vrow = vld1q_f32(matrix_get(matrix, row, i));
-		if(any_lane_is_zero(vrow)){
-			for(; i < matrix->cols; i++){
-				if(fabsf(*matrix_get(matrix, row, i)) < EPSILON)
-					continue;
-				matrix_set(matrix, row, i, *matrix_get(matrix, row, i) / scalar);
-			}
-			continue;
-		}
 		float32x4_t vres = vdivq_f32(vrow, vscalar);
 		vst1q_f32(matrix_get(matrix, row, i), vres);
 	}
 #endif
-	for(; i < matrix->cols; i++){
-		if(fabsf(*matrix_get(matrix, row, i)) < EPSILON)
-			continue;
-		matrix_set(matrix, row, i, *matrix_get(matrix, row, i) / scalar);
-	}
+	for(; i < matrix->cols; i++)
+		*matrix_get(matrix, row, i) /= scalar;
 }
 
-void eliminate_not_pivot(struct Matrix* matrix, struct Matrix* identity, uint row){
+static void eliminate_not_pivot(struct Matrix* matrix, struct Matrix* identity, uint row){
 	for(uint i = 0; i < matrix->rows; i++){
 		if(i == row)
 			continue;
+		float scalar = *matrix_get(matrix, i, row);
 		uint j = 0;
 #if defined(__ARM_NEON)
 		for(; j + 4 <= matrix->cols; j += 4){
-			float32x4_t vrow1 = vld1q_f32(matrix_get(matrix, row, j));
-			float32x4_t vrow2 = vld1q_f32(matrix_get(matrix, i, j));
-			float32x4_t vidrow1 = vld1q_f32(matrix_get(identity, row, j));
-			float32x4_t vidrow2 = vld1q_f32(matrix_get(identity, i, j));
-			float32x4_t vscalar = vdupq_n_f32(*matrix_get(matrix, i, row));
-			float32x4_t vmul = vmulq_f32(vscalar, vrow1);
-			float32x4_t vidmul = vmulq_f32(vscalar, vidrow1);
-			float32x4_t vsub = vsubq_f32(vrow2, vmul);
-			float32x4_t vidsub = vsubq_f32(vidrow2, vidmul);
-			vst1q_f32(matrix_get(matrix, i, j), vsub);
-			vst1q_f32(matrix_get(identity, i, j), vidsub);
+			float32x4_t vscalar = vdupq_n_f32(scalar);
+			float32x4_t vmul = vmulq_f32(vscalar, 
+					vld1q_f32(matrix_get(matrix, row, j)));
+			float32x4_t vidmul = vmulq_f32(vscalar, 
+					vld1q_f32(matrix_get(identity, row, j)));
+			float32x4_t vsub = vsubq_f32(vld1q_f32(matrix_get(matrix, i, j)), 
+					vmul);
+			float32x4_t vidsub = vsubq_f32(vld1q_f32(matrix_get(identity, i, j)),
+					vidmul);
+			float32x4_t vres = vsubq_f32(vld1q_f32(matrix_get(matrix, i, j)),
+					vsub);
+			float32x4_t vidres = vsubq_f32(vld1q_f32(matrix_get(identity, i, j)),
+					vidsub);
+			vst1q_f32(matrix_get(matrix, i, j), vres);
+			vst1q_f32(matrix_get(identity, i, j), vidres);
 		}
 #endif
 		for(; j < matrix->cols; j++){
-			matrix_set(matrix, i, j, *matrix_get(matrix, i, j) -
-					*matrix_get(matrix, i, row) * *matrix_get(matrix, row, j));
-			matrix_set(identity, i, j, *matrix_get(matrix, i, j) -
-					*matrix_get(matrix, i, row) * *matrix_get(identity, row, j));
+			*matrix_get(matrix, i, j) -= scalar * *matrix_get(matrix, row, j);
+			*matrix_get(identity, i, j) -= scalar * *matrix_get(identity, row, j);
 		}
 	}
 }
@@ -397,14 +433,7 @@ void eliminate_not_pivot(struct Matrix* matrix, struct Matrix* identity, uint ro
 struct Matrix* matrix_inverse(struct Matrix* matrix, uint* invertible){
 	*invertible = 1;
 	struct Matrix* result = matrix_identity(matrix->rows);
-	struct Matrix* copy_matrix = matrix_new(matrix->rows, matrix->cols);
-	uint i = 0;
-#if defined(__ARM_NEON)
-	for(; i + 4 <= copy_matrix->rows * copy_matrix->cols; i += 4)
-		vst1q_f32(copy_matrix->values + i, vld1q_f32(matrix->values + i));
-#endif
-	for(; i < copy_matrix->rows * copy_matrix->cols; i++)
-		copy_matrix->values[i] = matrix->values[i];
+	struct Matrix* copy_matrix = matrix_copy(matrix);
 	for(uint i = 0; i < copy_matrix->rows; i++){
 		if(fabsf(*matrix_get(copy_matrix, i, i)) < EPSILON){
 			*invertible = 0;
@@ -421,9 +450,10 @@ struct Matrix* matrix_inverse(struct Matrix* matrix, uint* invertible){
 				return NULL;
 			}
 		}
-		matrix_div_row(result, i, *matrix_get(copy_matrix, i, i));
-		matrix_div_row(copy_matrix, i, *matrix_get(copy_matrix, i, i));
-		eliminate_not_pivot(result, copy_matrix, i);
+		float pivot_value = *matrix_get(copy_matrix, i, i);
+		matrix_div_row(copy_matrix, i, pivot_value);
+		matrix_div_row(result, i, pivot_value);
+		eliminate_not_pivot(copy_matrix, result, i);
 	}
 	matrix_free(copy_matrix);
 	return result;

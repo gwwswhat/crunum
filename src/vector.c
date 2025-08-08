@@ -116,6 +116,22 @@ struct Vector* vector_sub_scalar(struct Vector* vector, float scalar){
 	return result;
 }
 
+struct Vector* scalar_sub_vector(float scalar, struct Vector* vector){
+	struct Vector* result = vector_new(vector->len);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+	for(; i + 4 <= vector->len; i += 4){
+		float32x4_t vvec = vld1q_f32(vector->values + i);
+		float32x4_t vres = vsubq_f32(vscalar, vvec);
+		vst1q_f32(result->values + i, vres);
+	}
+#endif
+	for(; i < vector->len; i++)
+		result->values[i] = scalar - vector->values[i];
+	return result;
+}
+
 struct Vector* vector_mul(struct Vector* vector1, struct Vector* vector2){
 	struct Vector* result = vector_new(vector1->len);
 	uint i = 0;
@@ -199,6 +215,21 @@ struct Vector* vector_div_scalar(struct Vector* vector, float scalar){
 	return result;
 }
 
+struct Vector* scalar_div_vector(float scalar, struct Vector* vector){
+	struct Vector* result = vector_new(vector->len);
+	uint i = 0;
+#if defined(__ARM_NEON)
+	float32x4_t vscalar = vdupq_n_f32(scalar);
+	for(; i + 4 <= vector->len; i += 4){
+		float32x4_t vvec = vld1q_f32(vector->values + i);
+		float32x4_t vres = vdivq_f32(vscalar, vvec);
+		vst1q_f32(result->values + i, vres);
+	}
+#endif
+	for(; i < vector->len; i++)
+		result->values[i] = scalar / vector->values[i];
+	return result;
+}
 
 uint vector_eq(struct Vector* vector1, struct Vector* vector2){
 	uint i = 0;

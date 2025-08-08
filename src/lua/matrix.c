@@ -177,10 +177,14 @@ static int l_matrix_inverse(lua_State* lua){
 		return 0;
 	}
 	uint invertible;
-	matrix_inverse(matrix, &invertible);
+	struct Matrix* temp = matrix_inverse(matrix, &invertible);
 	if(!invertible)
 		luaL_error(lua, "Matrix can't be inversed");
-	return 0;
+	struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+	(*result) = temp;
+	luaL_getmetatable(lua, "CrunumMatrix");
+	lua_setmetatable(lua, -2);
+	return 1;
 }
 
 static int l_matrix_push_row(lua_State* lua){
@@ -265,7 +269,83 @@ static int l_matrix_tostring(lua_State* lua){
 	return 1;
 }
 
+static int l_matrix_add(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+		*result = matrix_add_scalar(matrix, luaL_checknumber(lua, 1));
+		luaL_getmetatable(lua, "CrunumMatrix");
+		lua_setmetatable(lua, -2);
+		return 1;
+	}
+	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix** matrix2 = luaL_testudata(lua, 2, "CrunumMatrix");
+	if(matrix2){
+		if(matrix1->rows * matrix1->cols != 
+				(*matrix2)->rows * (*matrix2)->cols){
+			luaL_error(lua, "Matrix size doesn't match another matrix size");
+			return 0;
+		}
+		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+		*result = matrix_add(matrix1, *matrix2);
+		luaL_getmetatable(lua, "CrunumMatrix");
+		lua_setmetatable(lua, -2);
+		return 1;
+	}
+	if(lua_type(lua, 2) == LUA_TNUMBER){
+		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+		*result = matrix_add_scalar(matrix1, luaL_checknumber(lua, 2));
+		luaL_getmetatable(lua, "CrunumMatrix");
+		lua_setmetatable(lua, -2);
+		return 1;
+	}
+	luaL_error(lua, "Right operand aren't either matrix or scalar");
+	return 0;
+}
+
+static int l_matrix_sub(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+		*result = scalar_sub_matrix(luaL_checknumber(lua, 1), matrix);
+		luaL_getmetatable(lua, "CrunumMatrix");
+		lua_setmetatable(lua, -2);
+		return 1;
+	}
+	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	struct Matrix** matrix2 = luaL_testudata(lua, 2, "CrunumMatrix");
+	if(matrix2){
+		if(matrix1->rows * matrix1->cols != 
+				(*matrix2)->rows * (*matrix2)->cols){
+			luaL_error(lua, "Matrix size doesn't match another matrix size");
+			return 0;
+		}
+		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+		*result = matrix_sub(matrix1, *matrix2);
+		luaL_getmetatable(lua, "CrunumMatrix");
+		lua_setmetatable(lua, -2);
+		return 1;
+	}
+	if(lua_type(lua, 2) == LUA_TNUMBER){
+		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+		*result = matrix_sub_scalar(matrix1, luaL_checknumber(lua, 2));
+		luaL_getmetatable(lua, "CrunumMatrix");
+		lua_setmetatable(lua, -2);
+		return 1;
+	}
+	luaL_error(lua, "Right operand aren't either matrix or scalar");
+	return 0;
+}
+
 static int l_matrix_mul(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+		*result = matrix_mul_scalar(matrix, luaL_checknumber(lua, 1));
+		luaL_getmetatable(lua, "CrunumMatrix");
+		lua_setmetatable(lua, -2);
+		return 1;
+	}
 	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Matrix** matrix2 = luaL_testudata(lua, 2, "CrunumMatrix");
 	if(matrix2){
@@ -302,7 +382,15 @@ static int l_matrix_mul(lua_State* lua){
 	return 0;
 }
 
-static int l_matrix_add(lua_State* lua){
+static int l_matrix_div(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
+		*result = scalar_div_matrix(luaL_checknumber(lua, 1), matrix);
+		luaL_getmetatable(lua, "CrunumMatrix");
+		lua_setmetatable(lua, -2);
+		return 1;
+	}
 	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
 	struct Matrix** matrix2 = luaL_testudata(lua, 2, "CrunumMatrix");
 	if(matrix2){
@@ -312,14 +400,14 @@ static int l_matrix_add(lua_State* lua){
 			return 0;
 		}
 		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
-		*result = matrix_add(matrix1, *matrix2);
+		*result = matrix_div(matrix1, *matrix2);
 		luaL_getmetatable(lua, "CrunumMatrix");
 		lua_setmetatable(lua, -2);
 		return 1;
 	}
 	if(lua_type(lua, 2) == LUA_TNUMBER){
 		struct Matrix** result = lua_newuserdata(lua, sizeof(struct Matrix*));
-		*result = matrix_add_scalar(matrix1, luaL_checknumber(lua, 2));
+		*result = matrix_div_scalar(matrix1, luaL_checknumber(lua, 2));
 		luaL_getmetatable(lua, "CrunumMatrix");
 		lua_setmetatable(lua, -2);
 		return 1;
@@ -348,8 +436,19 @@ static int l_matrix_pow(lua_State* lua){
 }
 
 static int l_matrix_eq(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		lua_pushboolean(lua, (int)!matrix_eq_scalar(
+					matrix, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
-	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+	if(lua_type(lua, 2) == LUA_TNUMBER){
+		lua_pushboolean(lua, (int)matrix_eq_scalar(
+					matrix1, luaL_checknumber(lua, 2)));
+		return 1;
+	}
+	struct Matrix* matrix2 = luaL_checkudata(lua, 2, "CrunumMatrix");
 	if(matrix1->rows != matrix2->rows ||
 			matrix1->cols != matrix2->cols){
 		luaL_error(lua, "Both matrix aren't the same size");
@@ -360,7 +459,18 @@ static int l_matrix_eq(lua_State* lua){
 }
 
 static int l_matrix_neq(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		lua_pushboolean(lua, (int)!matrix_neq_scalar(
+					matrix, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	if(lua_type(lua, 2) == LUA_TNUMBER){
+		lua_pushboolean(lua, (int)matrix_neq_scalar(
+					matrix1, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
 	if(matrix1->rows != matrix2->rows ||
 			matrix1->cols != matrix2->cols){
@@ -372,7 +482,18 @@ static int l_matrix_neq(lua_State* lua){
 }
 
 static int l_matrix_gt(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		lua_pushboolean(lua, (int)!matrix_gt_scalar(
+					matrix, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	if(lua_type(lua, 2) == LUA_TNUMBER){
+		lua_pushboolean(lua, (int)matrix_gt_scalar(
+					matrix1, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
 	if(matrix1->rows != matrix2->rows ||
 			matrix1->cols != matrix2->cols){
@@ -384,7 +505,18 @@ static int l_matrix_gt(lua_State* lua){
 }
 
 static int l_matrix_ge(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		lua_pushboolean(lua, (int)!matrix_ge_scalar(
+					matrix, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	if(lua_type(lua, 2) == LUA_TNUMBER){
+		lua_pushboolean(lua, (int)matrix_ge_scalar(
+					matrix1, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
 	if(matrix1->rows != matrix2->rows ||
 			matrix1->cols != matrix2->cols){
@@ -396,7 +528,18 @@ static int l_matrix_ge(lua_State* lua){
 }
 
 static int l_matrix_lt(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		lua_pushboolean(lua, (int)!matrix_lt_scalar(
+					matrix, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	if(lua_type(lua, 2) == LUA_TNUMBER){
+		lua_pushboolean(lua, (int)matrix_lt_scalar(
+					matrix1, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
 	if(matrix1->rows != matrix2->rows ||
 			matrix1->cols != matrix2->cols){
@@ -408,7 +551,18 @@ static int l_matrix_lt(lua_State* lua){
 }
 
 static int l_matrix_le(lua_State* lua){
+	if(lua_type(lua, 1) == LUA_TNUMBER){
+		struct Matrix* matrix = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
+		lua_pushboolean(lua, (int)!matrix_le_scalar(
+					matrix, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix1 = *(struct Matrix**)luaL_checkudata(lua, 1, "CrunumMatrix");
+	if(lua_type(lua, 2) == LUA_TNUMBER){
+		lua_pushboolean(lua, (int)matrix_le_scalar(
+					matrix1, luaL_checknumber(lua, 2)));
+		return 1;
+	}
 	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
 	if(matrix1->rows != matrix2->rows ||
 			matrix1->cols != matrix2->cols){
@@ -443,8 +597,10 @@ const luaL_Reg matrix_methods[] = {
 	{"pop_col", l_matrix_pop_col},
 	{"__gc", l_matrix_gc},
 	{"__tostring", l_matrix_tostring},
-	{"__mul", l_matrix_mul},
 	{"__add", l_matrix_add},
+	{"__sub", l_matrix_sub},
+	{"__mul", l_matrix_mul},
+	{"__div", l_matrix_div},
 	{"__pow", l_matrix_pow},
 	{"__eq", l_matrix_eq},
 	{"__neq", l_matrix_neq},
