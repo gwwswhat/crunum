@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "lua.h"
+#include "lua_bind.h"
 
 int luaopen_crunum(lua_State* lua){
 	srand(time(NULL));

@@ -7,7 +7,7 @@
 
 #pragma message "Python Vector"
 
-#include "python.h"
+#include "python_bind.h"
 
 static struct CrunumVector* crn_vector_new(PyObject* self, PyObject* args){
 	(void)self;

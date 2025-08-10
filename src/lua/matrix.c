@@ -7,7 +7,7 @@
 
 #pragma message "Lua Matrix"
 
-#include "lua.h"
+#include "lua_bind.h"
 
 static int l_matrix_new(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);

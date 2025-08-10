@@ -7,7 +7,7 @@
 
 #pragma message "Python Matrix"
 
-#include "python.h"
+#include "python_bind.h"
 
 static struct CrunumMatrix* crn_matrix_new(PyObject* self, PyObject* args){
 	(void)self;

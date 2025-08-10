@@ -1,4 +1,11 @@
-#include "python.h"
+/*
+ * SPDX-License-Identifier: GPL-3.0
+ * Copyright (C) 2025 Vgwws
+ *
+ * This file is licensed under GPL-3.0. See LICENSE for details.
+ */
+
+#include "python_bind.h"
 
 static struct PyModuleDef crn_crunum_def = {
 	PyModuleDef_HEAD_INIT,

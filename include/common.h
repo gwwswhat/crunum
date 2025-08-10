@@ -1,10 +1,9 @@
 #ifndef CRUNUM_COMMON_H
 #define CRUNUM_COMMON_H
 
-#define EPSILON 1e-6
-#define VERSION "0.0.0"
+#define NEAR_ZERO 1e-6
 
-#if defined(__ARM_NEON)
+#if HAVE_NEON
 #include <arm_neon.h>
 
 static inline float p_vaddvq_f32(float32x4_t v){
@@ -49,6 +48,8 @@ static inline uint any_lane_is_zero(float32x4_t v){
 }
 
 #endif
+
+#include "config.h"
 
 typedef unsigned int uint;
 typedef unsigned long ulong;

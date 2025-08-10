@@ -7,7 +7,7 @@
 
 #pragma message "Lua Vector"
 
-#include "lua.h"
+#include "lua_bind.h"
 
 static int l_vector_new(lua_State* lua){
 	int len = luaL_checkinteger(lua, 1);
