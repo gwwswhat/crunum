@@ -23,7 +23,7 @@ Clone this repository
 ```bash
 git clone https://github.com/Vgwws/crunum.git
 ```
-Configure ir
+Configure it
 ```bash
 ./configure --with-target=<language>
 ```
