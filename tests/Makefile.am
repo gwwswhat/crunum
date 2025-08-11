@@ -5,7 +5,7 @@
 
 TESTS = matrix.py vector.py matrix.lua vector.lua
 
-EXTRA_DIST = matrix.py vector.py matrix.lua vector.lua matrix_print.py
+EXTRA_DIST = $(TESTS) matrix_print.py
 
 check-local:
 	chmod +x $(TESTS)

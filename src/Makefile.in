@@ -13,6 +13,11 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
+
+# SPDX-License-Identifier: GPL-3.0
+# Copyright (C) 2025 Vgwws
+#
+# This file is licensed under the GPL-3.0 License. See LICENSE for details.
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \

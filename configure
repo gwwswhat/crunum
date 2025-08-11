@@ -5,8 +5,9 @@
 # Report bugs to <gwwswhat@gmail.com>.
 #
 #
+# 							SPDX-License-Identifier: GPL-3.0
 # 							Copyright (C) 2025 Vgwws
-# 							Licensed under the GPL-3.0 License.
+# 							This file is licensed under the GPL-3.0 License. See LICENSE for details.
 #
 #
 #
@@ -1583,8 +1584,9 @@ This configure script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it.
 
 
+							SPDX-License-Identifier: GPL-3.0
 							Copyright (C) 2025 Vgwws
-							Licensed under the GPL-3.0 License.
+							This file is licensed under the GPL-3.0 License. See LICENSE for details.
 
 _ACEOF
   exit
@@ -15865,7 +15867,7 @@ fi
 esac
 
 
-ac_config_files="$ac_config_files Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile pkgconfig/crunum.pc"
+ac_config_files="$ac_config_files Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile tests/Makefile pkgconfig/crunum.pc"
 
 
 cat >confcache <<\_ACEOF
@@ -16915,6 +16917,7 @@ do
     "src/lua/Makefile") CONFIG_FILES="$CONFIG_FILES src/lua/Makefile" ;;
     "src/python/Makefile") CONFIG_FILES="$CONFIG_FILES src/python/Makefile" ;;
     "pkgconfig/Makefile") CONFIG_FILES="$CONFIG_FILES pkgconfig/Makefile" ;;
+    "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
     "pkgconfig/crunum.pc") CONFIG_FILES="$CONFIG_FILES pkgconfig/crunum.pc" ;;
 
   *) as_fn_error $? "invalid argument: '$ac_config_target'" "$LINENO" 5;;
