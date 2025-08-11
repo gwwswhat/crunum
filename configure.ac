@@ -86,7 +86,7 @@ fi
 
 AC_SUBST([CFLAGS])
 
-C_PROG_INSTALL
+AC_PROG_INSTALL
 
 AC_C_INLINE
 
@@ -97,6 +97,8 @@ AC_CHECK_HEADERS([stdlib.h string.h math.h time.h stddef.h], [], [
 	AC_MSG_ERROR([Can't find required headers])])
 AC_CHECK_FUNCS([srand time rand], [], [
 	AC_MSG_ERROR([Can't find required functions])])
+AC_CHECK_LIB([m], [fabsf], [], 
+	[AC_MSG_ERROR([Can't find required library])])
 
 PKG_PROG_PKG_CONFIG
 
