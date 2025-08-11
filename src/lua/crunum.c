@@ -7,6 +7,8 @@
 
 #pragma message "Lua Crunum"
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <time.h>
 

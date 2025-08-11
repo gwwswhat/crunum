@@ -5,6 +5,7 @@
  * This file is licensed under GPL-3.0. See LICENSE for details.
  */
 
+#include "config.h"
 #include "matrix.h"
 #include "vector.h"
 

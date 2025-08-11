@@ -5,11 +5,11 @@ libcrunum_la_SOURCES = crunum.c matrix.c vector.c
 libcrunum_la_CPPFLAGS = -I$(top_srcdir)/include
 libcrunum_la_CFLAGS = @CFLAGS@ $(PYTHON_CFLAGS)
 libcrunum_la_LDFLAGS = -module -avoid-version $(PYTHON_LIBS)
-libcrunum_la_LDADD = $(top_srcdir)/src/matrix/libmatrix.la \
+libcrunum_la_LIBADD = $(top_srcdir)/src/matrix/libmatrix.la \
 											$(top_srcdir)/src/vector/libvector.la
 
 install-exec-local:
 	ln -sf $(DESTDIR)$(python_pkgdir)/libcrunum.so $(DESTDIR)$(python_pkgdir)/crunum.so
 
-uninstall-exec-local:
+uninstall-local:
 	rm -f $(DESTDIR)$(python_pkgdir)/crunum.so

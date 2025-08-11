@@ -6,6 +6,7 @@
 *.dll
 *.la
 *.lo
+*.pc
 *.o
 *.a
 *~
@@ -15,3 +16,4 @@ config.h
 core
 .libs
 .deps
+config.status

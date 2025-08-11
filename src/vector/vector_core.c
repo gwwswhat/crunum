@@ -5,6 +5,8 @@
  * This file is licensed under GPL-3.0. See LICENSE for details.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>

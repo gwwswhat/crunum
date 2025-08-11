@@ -1,4 +1,5 @@
-lib_LTLIBRARIES = libmatrix.la
+matrix_libdir = @libdir@/crunum
+matrix_lib_LTLIBRARIES = libmatrix.la
 
 libmatrix_la_SOURCES = matrix_core.c matrix_math.c
 libmatrix_la_CPPFLAGS = -I$(top_srcdir)/include

@@ -8,24 +8,12 @@ AM_PROG_AR
 LT_INIT
 AC_CONFIG_SRCDIR([src/matrix/matrix_core.c])
 AC_CONFIG_MACRO_DIRS([m4])
-AC_CONFIG_HEADERS([config.h])
-AC_ARG_ENABLE([debug],
-							[AS_HELP_STRING([--enable-debug], [Enable debug build flags])],
-							[enable_debug=$enableval],
-						  [enable_debug=no])
-
-if test "x$enable_debug" = "xyes"; then
-	CFLAGS="$CFLAGS -Wall -Wextra -Werror -std=gnu99 -fPIC -g -O0 -DDEBUG"
-	AC_SUBST([CFLAGS]) 
-else
-	CFLAGS="$CFLAGS -Wall -Wextra -Werror -std=gnu99 -fPIC -O2"
-	AC_SUBST([CFLAGS])
-fi
+AC_CONFIG_HEADERS([include/config.h])
 
 AC_ARG_WITH([target],
-						[AS_HELP_STRING([--with-target=language], [Specify target language])],
-						[target_lang="$withval"],
-						[target_lang=""])
+	[AS_HELP_STRING([--with-target=language], [Specify target language])],
+	[target_lang="$withval"],
+	[target_lang=""])
 
 if test -z "$target_lang"; then
 	AC_MSG_ERROR([Must specify --with-target=<language>])
@@ -33,9 +21,71 @@ fi
 
 AM_CONDITIONAL([TARGET_PYTHON], [test "x$target_lang" = "xpython"])
 AM_CONDITIONAL([TARGET_LUA], [test "x$target_lang" = "xlua"])
+AM_CONDITIONAL([TARGET_C], [test "x$target_lang" = "xc"])
 
+AC_CANONICAL_HOST
 AC_PROG_CC
-AC_PROG_INSTALL
+
+AX_CHECK_COMPILE_FLAG([-Wall],
+	[CFLAGS="$CFLAGS -Wall"],
+	[])
+AX_CHECK_COMPILE_FLAG([-Wextra],
+	[CFLAGS="$CFLAGS -Wextra"],
+	[])
+AX_CHECK_COMPILE_FLAG([-Werror],
+	[CFLAGS="$CFLAGS -Werror"],
+	[])
+AX_CHECK_COMPILE_FLAG([-std=gnu99],
+	[CFLAGS="$CFLAGS -std=gnu99"],
+	[AC_MSG_ERROR([No -std=gnu99 support])])
+
+AC_ARG_ENABLE([debug],
+	[AS_HELP_STRING([--enable-debug], [Enable debug build flags])],
+	[enable_debug=yes],
+	[enable_debuf=no])
+
+if test "x$enable_debug" = "xyes"; then
+	AX_CHECK_COMPILE_FLAG([-g],
+		[CFLAGS="$CFLAGS -g"],
+		[])
+	AX_CHECK_COMPILE_FLAG([-O0],
+		[CFLAGS="$CFLAGS -O0"],
+		[])
+	AC_DEFINE([DEBUG], [], [Define debug mode])
+else
+	AX_CHECK_COMPILE_FLAG([-O2],
+		[CFLAGS="$CFLAGS -O2"],
+		[])
+fi
+
+AC_ARG_ENABLE([native],
+	[AS_HELP_STRING([--enable-native], [Enable -march=native flag])],
+	[enable_native=yes],
+	[enable_native=no])
+
+if test "x$enable_native" = "xyes"; then
+	CFLAGS="$CFLAGS -march=native"
+else
+	case "$host_cpu" in
+		arm*)
+			AX_CHECK_COMPILE_FLAG([-mfpu=neon],
+														[CFLAGS="$CFLAGS -mfpu=neon"],
+														[])
+			AC_DEFINE([HAVE_NEON], [1], [Define if CPU have NEON support])
+			AX_FUNC_POSIX_MEMALIGN
+			;;
+		aarch64)
+			AC_DEFINE([HAVE_NEON], [1], [Define if CPU have NEON support])
+			AX_FUNC_POSIX_MEMALIGN
+			;;
+		*)
+			;;
+	esac
+fi
+
+AC_SUBST([CFLAGS])
+
+C_PROG_INSTALL
 
 AC_C_INLINE
 
@@ -43,40 +93,9 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
 AC_CHECK_HEADERS([stdlib.h string.h math.h time.h stddef.h], [], [
-									AC_MSG_ERROR([Can't find required headers])
-								  ])
+	AC_MSG_ERROR([Can't find required headers])])
 AC_CHECK_FUNCS([srand time rand], [], [
-								AC_MSG_ERROR([Can't find required functions])
-								])
-
-AC_MSG_CHECKING([whether CPU have NEON support])
-saved_CFLAGS="$CFLAGS"
-CFLAGS="-march=native"
-AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[]], [[
-		 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
-		 int main(void){
-			 return 0;
-		 }
-	   #else
-		 #error "NEON not supported"
-		 #endif
-		 ]])],
-	[
-	 AC_MSG_RESULT([yes])
-	 AC_DEFINE([HAVE_NEON], [1], [Define if CPU have NEON support])
-	 simd_supported=yes
-	], 
-	[
-	 AC_MSG_RESULT([no])
-	 simd_supported=no
-	])
-CFLAGS="$saved_CFLAGS"
-
-if test "x$simd_supported" = "xyes"; then
-	AX_FUNC_POSIX_MEMALIGN
-fi
+	AC_MSG_ERROR([Can't find required functions])])
 
 PKG_PROG_PKG_CONFIG
 
@@ -101,24 +120,23 @@ AC_MSG_RESULT([$target_lang])
 
 case "$target_lang" in
 	python)
-	  PKG_CHECK_MODULES([PYTHON], [python3], [],
-											[AC_MSG_ERROR([Can't find pkg-config for python3])])
+		PKG_CHECK_MODULES([PYTHON], [python3], [],
+			[AC_MSG_ERROR([Can't find pkg-config for python3])])
 		AC_PATH_PROG([PYTHON], [python3 python])
 		PYTHON_SITE_PACKAGES=`$PYTHON -m site --user-site`
 		AC_SUBST([PYTHON_SITE_PACKAGES])
 		;;
 	lua)
-	  CHECK_LUA_MODULES
+		CHECK_LUA_MODULES
+		;;
+	c)
 		;;
 	*)
-	  AC_MSG_ERROR([Unknown target language])
+		AC_MSG_ERROR([Unknown target language])
 		;;
 esac
+AC_SUBST([target_lang])
 
-AC_CONFIG_FILES([Makefile 
-								 src/Makefile 
-								 src/matrix/Makefile 
-								 src/vector/Makefile 
-								 src/"$target_lang"/Makefile])
+AC_CONFIG_FILES([Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile pkgconfig/crunum.pc])
 
 AC_OUTPUT

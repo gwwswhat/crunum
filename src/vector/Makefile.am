@@ -1,4 +1,5 @@
-lib_LTLIBRARIES = libvector.la
+vector_libdir = @libdir@/crunum
+vector_lib_LTLIBRARIES = libvector.la
 
 libvector_la_SOURCES = vector_core.c vector_math.c
 libvector_la_CPPFLAGS = -I$(top_srcdir)/include

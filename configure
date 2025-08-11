@@ -660,6 +660,7 @@ ac_unique_file="src/matrix/matrix_core.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+target_lang
 LUA_CPATH_FIRST
 LUA
 LUA_LIBS
@@ -672,6 +673,8 @@ PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
 LIBOBJS
+TARGET_C_FALSE
+TARGET_C_TRUE
 TARGET_LUA_FALSE
 TARGET_LUA_TRUE
 TARGET_PYTHON_FALSE
@@ -810,8 +813,9 @@ with_aix_soname
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
-enable_debug
 with_target
+enable_debug
+enable_native
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1473,6 +1477,7 @@ Optional Features:
                           provide on AIX, [default=aix].
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-debug          Enable debug build flags
+  --enable-native         Enable -march=native flag
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -13772,25 +13777,8 @@ CC=$lt_save_CC
 
 
 
-ac_config_headers="$ac_config_headers config.h"
+ac_config_headers="$ac_config_headers include/config.h"
 
-# Check whether --enable-debug was given.
-if test ${enable_debug+y}
-then :
-  enableval=$enable_debug; enable_debug=$enableval
-else case e in #(
-  e) enable_debug=no ;;
-esac
-fi
-
-
-if test "x$enable_debug" = "xyes"; then
-	CFLAGS="$CFLAGS -Wall -Wextra -Werror -std=gnu99 -fPIC -g -O0 -DDEBUG"
-
-else
-	CFLAGS="$CFLAGS -Wall -Wextra -Werror -std=gnu99 -fPIC -O2"
-
-fi
 
 
 # Check whether --with-target was given.
@@ -13822,6 +13810,15 @@ else
   TARGET_LUA_TRUE='#'
   TARGET_LUA_FALSE=
 fi
+
+ if test "x$target_lang" = "xc"; then
+  TARGET_C_TRUE=
+  TARGET_C_FALSE='#'
+else
+  TARGET_C_TRUE='#'
+  TARGET_C_FALSE=
+fi
+
 
 
 ac_ext=c
@@ -14770,6 +14767,480 @@ fi
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -Wall" >&5
+printf %s "checking whether C compiler accepts -Wall... " >&6; }
+if test ${ax_cv_check_cflags___Wall+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS  -Wall"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ax_cv_check_cflags___Wall=yes
+else case e in #(
+  e) ax_cv_check_cflags___Wall=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___Wall" >&5
+printf "%s\n" "$ax_cv_check_cflags___Wall" >&6; }
+if test "x$ax_cv_check_cflags___Wall" = xyes
+then :
+  CFLAGS="$CFLAGS -Wall"
+else case e in #(
+  e) : ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -Wextra" >&5
+printf %s "checking whether C compiler accepts -Wextra... " >&6; }
+if test ${ax_cv_check_cflags___Wextra+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS  -Wextra"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ax_cv_check_cflags___Wextra=yes
+else case e in #(
+  e) ax_cv_check_cflags___Wextra=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___Wextra" >&5
+printf "%s\n" "$ax_cv_check_cflags___Wextra" >&6; }
+if test "x$ax_cv_check_cflags___Wextra" = xyes
+then :
+  CFLAGS="$CFLAGS -Wextra"
+else case e in #(
+  e) : ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -Werror" >&5
+printf %s "checking whether C compiler accepts -Werror... " >&6; }
+if test ${ax_cv_check_cflags___Werror+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS  -Werror"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ax_cv_check_cflags___Werror=yes
+else case e in #(
+  e) ax_cv_check_cflags___Werror=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___Werror" >&5
+printf "%s\n" "$ax_cv_check_cflags___Werror" >&6; }
+if test "x$ax_cv_check_cflags___Werror" = xyes
+then :
+  CFLAGS="$CFLAGS -Werror"
+else case e in #(
+  e) : ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -std=gnu99" >&5
+printf %s "checking whether C compiler accepts -std=gnu99... " >&6; }
+if test ${ax_cv_check_cflags___std_gnu99+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS  -std=gnu99"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ax_cv_check_cflags___std_gnu99=yes
+else case e in #(
+  e) ax_cv_check_cflags___std_gnu99=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___std_gnu99" >&5
+printf "%s\n" "$ax_cv_check_cflags___std_gnu99" >&6; }
+if test "x$ax_cv_check_cflags___std_gnu99" = xyes
+then :
+  CFLAGS="$CFLAGS -std=gnu99"
+else case e in #(
+  e) as_fn_error $? "No -std=gnu99 support" "$LINENO" 5 ;;
+esac
+fi
+
+
+# Check whether --enable-debug was given.
+if test ${enable_debug+y}
+then :
+  enableval=$enable_debug; enable_debug=yes
+else case e in #(
+  e) enable_debuf=no ;;
+esac
+fi
+
+
+if test "x$enable_debug" = "xyes"; then
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -g" >&5
+printf %s "checking whether C compiler accepts -g... " >&6; }
+if test ${ax_cv_check_cflags___g+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS  -g"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ax_cv_check_cflags___g=yes
+else case e in #(
+  e) ax_cv_check_cflags___g=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___g" >&5
+printf "%s\n" "$ax_cv_check_cflags___g" >&6; }
+if test "x$ax_cv_check_cflags___g" = xyes
+then :
+  CFLAGS="$CFLAGS -g"
+else case e in #(
+  e) : ;;
+esac
+fi
+
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -O0" >&5
+printf %s "checking whether C compiler accepts -O0... " >&6; }
+if test ${ax_cv_check_cflags___O0+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS  -O0"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ax_cv_check_cflags___O0=yes
+else case e in #(
+  e) ax_cv_check_cflags___O0=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___O0" >&5
+printf "%s\n" "$ax_cv_check_cflags___O0" >&6; }
+if test "x$ax_cv_check_cflags___O0" = xyes
+then :
+  CFLAGS="$CFLAGS -O0"
+else case e in #(
+  e) : ;;
+esac
+fi
+
+
+printf "%s\n" "#define DEBUG /**/" >>confdefs.h
+
+else
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -O2" >&5
+printf %s "checking whether C compiler accepts -O2... " >&6; }
+if test ${ax_cv_check_cflags___O2+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS  -O2"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ax_cv_check_cflags___O2=yes
+else case e in #(
+  e) ax_cv_check_cflags___O2=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___O2" >&5
+printf "%s\n" "$ax_cv_check_cflags___O2" >&6; }
+if test "x$ax_cv_check_cflags___O2" = xyes
+then :
+  CFLAGS="$CFLAGS -O2"
+else case e in #(
+  e) : ;;
+esac
+fi
+
+fi
+
+# Check whether --enable-native was given.
+if test ${enable_native+y}
+then :
+  enableval=$enable_native; enable_native=yes
+else case e in #(
+  e) enable_native=no ;;
+esac
+fi
+
+
+if test "x$enable_native" = "xyes"; then
+	CFLAGS="$CFLAGS -march=native"
+else
+	case "$host_cpu" in
+		arm*)
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -mfpu=neon" >&5
+printf %s "checking whether C compiler accepts -mfpu=neon... " >&6; }
+if test ${ax_cv_check_cflags___mfpu_neon+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS  -mfpu=neon"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ax_cv_check_cflags___mfpu_neon=yes
+else case e in #(
+  e) ax_cv_check_cflags___mfpu_neon=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___mfpu_neon" >&5
+printf "%s\n" "$ax_cv_check_cflags___mfpu_neon" >&6; }
+if test "x$ax_cv_check_cflags___mfpu_neon" = xyes
+then :
+  CFLAGS="$CFLAGS -mfpu=neon"
+else case e in #(
+  e) : ;;
+esac
+fi
+
+
+printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
+
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working posix_memalign" >&5
+printf %s "checking for working posix_memalign... " >&6; }
+if test ${ax_cv_func_posix_memalign_works+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test "$cross_compiling" = yes
+then :
+  ax_cv_func_posix_memalign_works=no
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+
+int
+main ()
+{
+  void *buffer;
+
+  /* Some versions of glibc incorrectly perform the alignment check on
+   * the size word. */
+  exit (posix_memalign (&buffer, sizeof(void *), 123) != 0);
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"
+then :
+  ax_cv_func_posix_memalign_works=yes
+else case e in #(
+  e) ax_cv_func_posix_memalign_works=no ;;
+esac
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_func_posix_memalign_works" >&5
+printf "%s\n" "$ax_cv_func_posix_memalign_works" >&6; }
+if test "$ax_cv_func_posix_memalign_works" = "yes" ; then
+
+printf "%s\n" "#define HAVE_POSIX_MEMALIGN 1" >>confdefs.h
+
+fi
+
+			;;
+		aarch64)
+
+printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
+
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working posix_memalign" >&5
+printf %s "checking for working posix_memalign... " >&6; }
+if test ${ax_cv_func_posix_memalign_works+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test "$cross_compiling" = yes
+then :
+  ax_cv_func_posix_memalign_works=no
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+
+int
+main ()
+{
+  void *buffer;
+
+  /* Some versions of glibc incorrectly perform the alignment check on
+   * the size word. */
+  exit (posix_memalign (&buffer, sizeof(void *), 123) != 0);
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"
+then :
+  ax_cv_func_posix_memalign_works=yes
+else case e in #(
+  e) ax_cv_func_posix_memalign_works=no ;;
+esac
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_func_posix_memalign_works" >&5
+printf "%s\n" "$ax_cv_func_posix_memalign_works" >&6; }
+if test "$ax_cv_func_posix_memalign_works" = "yes" ; then
+
+printf "%s\n" "#define HAVE_POSIX_MEMALIGN 1" >>confdefs.h
+
+fi
+
+			;;
+		*)
+			;;
+	esac
+fi
+
+
+
+C_PROG_INSTALL
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for inline" >&5
 printf %s "checking for inline... " >&6; }
@@ -14968,8 +15439,7 @@ _ACEOF
 
 else case e in #(
   e)
-									as_fn_error $? "Can't find required headers" "$LINENO" 5
-								   ;;
+	as_fn_error $? "Can't find required headers" "$LINENO" 5 ;;
 esac
 fi
 
@@ -14987,107 +15457,11 @@ _ACEOF
 
 else case e in #(
   e)
-								as_fn_error $? "Can't find required functions" "$LINENO" 5
-								 ;;
+	as_fn_error $? "Can't find required functions" "$LINENO" 5 ;;
 esac
 fi
 
 done
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether CPU have NEON support" >&5
-printf %s "checking whether CPU have NEON support... " >&6; }
-saved_CFLAGS="$CFLAGS"
-CFLAGS="-march=native"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main (void)
-{
-
-		 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
-		 int main(void){
-			 return 0;
-		 }
-	   #else
-		 #error "NEON not supported"
-		 #endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-
-	 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
-
-	 simd_supported=yes
-
-else case e in #(
-  e)
-	 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-	 simd_supported=no
-	 ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-CFLAGS="$saved_CFLAGS"
-
-if test "x$simd_supported" = "xyes"; then
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working posix_memalign" >&5
-printf %s "checking for working posix_memalign... " >&6; }
-if test ${ax_cv_func_posix_memalign_works+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test "$cross_compiling" = yes
-then :
-  ax_cv_func_posix_memalign_works=no
-else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdlib.h>
-
-int
-main ()
-{
-  void *buffer;
-
-  /* Some versions of glibc incorrectly perform the alignment check on
-   * the size word. */
-  exit (posix_memalign (&buffer, sizeof(void *), 123) != 0);
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-  ax_cv_func_posix_memalign_works=yes
-else case e in #(
-  e) ax_cv_func_posix_memalign_works=no ;;
-esac
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
-esac
-fi
- ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_func_posix_memalign_works" >&5
-printf "%s\n" "$ax_cv_func_posix_memalign_works" >&6; }
-if test "$ax_cv_func_posix_memalign_works" = "yes" ; then
-
-printf "%s\n" "#define HAVE_POSIX_MEMALIGN 1" >>confdefs.h
-
-fi
-
-fi
 
 
 
@@ -15483,12 +15857,15 @@ fi
 
 
 		;;
+	c)
+		;;
 	*)
-	  as_fn_error $? "Unknown target language" "$LINENO" 5
+		as_fn_error $? "Unknown target language" "$LINENO" 5
 		;;
 esac
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/"$target_lang"/Makefile"
+
+ac_config_files="$ac_config_files Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile pkgconfig/crunum.pc"
 
 
 cat >confcache <<\_ACEOF
@@ -15642,6 +16019,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${TARGET_LUA_TRUE}" && test -z "${TARGET_LUA_FALSE}"; then
   as_fn_error $? "conditional \"TARGET_LUA\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${TARGET_C_TRUE}" && test -z "${TARGET_C_FALSE}"; then
+  as_fn_error $? "conditional \"TARGET_C\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
@@ -16525,12 +16906,16 @@ do
   case $ac_config_target in
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
-    "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
+    "include/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/matrix/Makefile") CONFIG_FILES="$CONFIG_FILES src/matrix/Makefile" ;;
     "src/vector/Makefile") CONFIG_FILES="$CONFIG_FILES src/vector/Makefile" ;;
-    "src/"$target_lang"/Makefile") CONFIG_FILES="$CONFIG_FILES src/"$target_lang"/Makefile" ;;
+    "src/lua/Makefile") CONFIG_FILES="$CONFIG_FILES src/lua/Makefile" ;;
+    "src/python/Makefile") CONFIG_FILES="$CONFIG_FILES src/python/Makefile" ;;
+    "pkgconfig/Makefile") CONFIG_FILES="$CONFIG_FILES pkgconfig/Makefile" ;;
+    "pkgconfig/crunum.pc") CONFIG_FILES="$CONFIG_FILES pkgconfig/crunum.pc" ;;
 
   *) as_fn_error $? "invalid argument: '$ac_config_target'" "$LINENO" 5;;
   esac
