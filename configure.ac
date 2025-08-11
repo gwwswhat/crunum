@@ -1,6 +1,7 @@
 AC_COPYRIGHT([
+							SPDX-License-Identifier: GPL-3.0
 							Copyright (C) 2025 Vgwws
-							Licensed under the GPL-3.0 License.
+							This file is licensed under the GPL-3.0 License. See LICENSE for details.
 							])
 AC_INIT([crunum], [0.0.0], [gwwswhat@gmail.com])
 AM_INIT_AUTOMAKE([-Wall subdir-objects])
