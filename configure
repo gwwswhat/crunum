@@ -15867,7 +15867,7 @@ fi
 esac
 
 
-ac_config_files="$ac_config_files Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile tests/Makefile pkgconfig/crunum.pc"
+ac_config_files="$ac_config_files Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile tests/Makefile tests/lua/Makefile tests/python/Makefile pkgconfig/crunum.pc"
 
 
 cat >confcache <<\_ACEOF
@@ -16918,6 +16918,8 @@ do
     "src/python/Makefile") CONFIG_FILES="$CONFIG_FILES src/python/Makefile" ;;
     "pkgconfig/Makefile") CONFIG_FILES="$CONFIG_FILES pkgconfig/Makefile" ;;
     "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
+    "tests/lua/Makefile") CONFIG_FILES="$CONFIG_FILES tests/lua/Makefile" ;;
+    "tests/python/Makefile") CONFIG_FILES="$CONFIG_FILES tests/python/Makefile" ;;
     "pkgconfig/crunum.pc") CONFIG_FILES="$CONFIG_FILES pkgconfig/crunum.pc" ;;
 
   *) as_fn_error $? "invalid argument: '$ac_config_target'" "$LINENO" 5;;

@@ -3,12 +3,8 @@
 #
 # This file is licensed under the GPL-3.0 License. See LICENSE for details.
 
-if TARGET_PYTHON
-SUBDIRS = python
-endif
+TESTS = matrix.py vector.py
+EXTRA_DIST = $(TESTS)
 
-if TARGET_LUA
-SUBDIRS = lua
-endif
-
-EXTRA_DIST = matrix_print.py
+check-local:
+	chmod +x $(TESTS)
