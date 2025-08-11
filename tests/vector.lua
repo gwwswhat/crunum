@@ -1,3 +1,5 @@
+#!/bin/lua
+
 package.cpath = "./?.so"
 
 local crn = require("crunum")

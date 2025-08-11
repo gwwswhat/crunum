@@ -138,6 +138,6 @@ case "$target_lang" in
 esac
 AC_SUBST([target_lang])
 
-AC_CONFIG_FILES([Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile pkgconfig/crunum.pc])
+AC_CONFIG_FILES([Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile tests/Makefile pkgconfig/crunum.pc])
 
 AC_OUTPUT

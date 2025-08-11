@@ -5,7 +5,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src include
+SUBDIRS = src include tests
 
 if TARGET_C
 SUBDIRS += pkgconfig
