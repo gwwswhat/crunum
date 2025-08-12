@@ -2,6 +2,7 @@
 *.swp
 *.log
 *.tmp
+*.trs
 *.so
 *.dll
 *.la
@@ -17,3 +18,5 @@ core
 .libs
 .deps
 config.status
+libtool
+stamp-h1

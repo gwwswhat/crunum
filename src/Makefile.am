@@ -3,14 +3,12 @@
 #
 # This file is licensed under the GPL-3.0 License. See LICENSE for details.
 
-SUBDIRS = matrix vector
+SUBDIRS = core
 
 if TARGET_PYTHON
 SUBDIRS += python
-TARGET = python
 endif
 
 if TARGET_LUA
 SUBDIRS += lua
-TARGET = lua
 endif

@@ -5,11 +5,11 @@
  * This file is licensed under the GPL-3.0 License. See LICENSE for details.
  */
 
-#ifndef CRUNUM_MATRIX_H
-#define CRUNUM_MATRIX_H
+#ifndef CRUNUM_H
+#define CRUNUM_H
 
-#include "vector.h"
-#include "common.h"
+typedef unsigned int uint;
+typedef unsigned long ulong;
 
 struct Matrix {
 	float* values;
@@ -17,6 +17,12 @@ struct Matrix {
 	uint cols;
 	uint rows_cap;
 	uint cols_cap;
+};
+
+struct Vector {
+	float* values;
+	uint len;
+	uint cap;
 };
 
 struct Matrix* matrix_new(uint rows, uint cols);
@@ -72,5 +78,38 @@ uint matrix_gt_scalar(struct Matrix* matrix, float scalar);
 uint matrix_ge_scalar(struct Matrix* matrix, float scalar);
 uint matrix_lt_scalar(struct Matrix* matrix, float scalar);
 uint matrix_le_scalar(struct Matrix* matrix, float scalar);
+
+struct Vector* vector_new(uint len);
+struct Vector* vector_randinit(uint len);
+struct Vector* vector_from_matrix(struct Matrix* matrix);
+void vector_free(struct Vector* vector);
+void vector_push(struct Vector* vector, float value);
+static inline float vector_pop(struct Vector* vector){
+	return vector->values[--vector->len];
+}
+
+struct Vector* vector_add(struct Vector* vector1, struct Vector* vector2);
+struct Vector* vector_add_scalar(struct Vector* vector, float scalar);
+struct Vector* vector_sub(struct Vector* vector1, struct Vector* vector2);
+struct Vector* vector_sub_scalar(struct Vector* vector, float scalar);
+struct Vector* scalar_sub_vector(float scalar, struct Vector* vector);
+struct Vector* vector_mul(struct Vector* vector1, struct Vector* vector2);
+struct Vector* vector_mul_scalar(struct Vector* vector, float scalar);
+struct Vector* vector_mul_matrix(struct Vector* vector, struct Matrix* matrix);
+struct Vector* vector_div(struct Vector* vector1, struct Vector* vector2);
+struct Vector* vector_div_scalar(struct Vector* vector, float scalar);
+struct Vector* scalar_div_vector(float scalar, struct Vector* vector);
+uint vector_eq(struct Vector* vector1, struct Vector* vector2);
+uint vector_neq(struct Vector* vector1, struct Vector* vector2);
+uint vector_gt(struct Vector* vector1, struct Vector* vector2);
+uint vector_ge(struct Vector* vector1, struct Vector* vector2);
+uint vector_lt(struct Vector* vector1, struct Vector* vector2);
+uint vector_le(struct Vector* vector1, struct Vector* vector2);
+uint vector_eq_scalar(struct Vector* vector, float scalar);
+uint vector_neq_scalar(struct Vector* vector, float scalar);
+uint vector_gt_scalar(struct Vector* vector, float scalar);
+uint vector_ge_scalar(struct Vector* vector, float scalar);
+uint vector_lt_scalar(struct Vector* vector, float scalar);
+uint vector_le_scalar(struct Vector* vector, float scalar);
 
 #endif

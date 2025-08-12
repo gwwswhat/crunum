@@ -657,12 +657,12 @@ ac_includes_default="\
 #endif"
 
 ac_header_c_list=
-ac_unique_file="src/matrix/matrix_core.c"
+ac_unique_file="src/core/matrix_core.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 target_lang
-LUA_CPATH_FIRST
+LUA_CPATH
 LUA
 LUA_LIBS
 LUA_CFLAGS
@@ -752,13 +752,13 @@ AUTOHEADER
 AUTOMAKE
 AUTOCONF
 ACLOCAL
-VERSION
 PACKAGE
 CYGPATH_W
 am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
+VERSION
 target_alias
 host_alias
 build_alias
@@ -816,7 +816,6 @@ with_sysroot
 enable_libtool_lock
 with_target
 enable_debug
-enable_native
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1478,7 +1477,6 @@ Optional Features:
                           provide on AIX, [default=aix].
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-debug          Enable debug build flags
-  --enable-native         Enable -march=native flag
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2622,6 +2620,8 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+
+VERSION=0.0.0
 
 am__api_version='1.17'
 
@@ -15074,22 +15074,9 @@ fi
 
 fi
 
-# Check whether --enable-native was given.
-if test ${enable_native+y}
-then :
-  enableval=$enable_native; enable_native=yes
-else case e in #(
-  e) enable_native=no ;;
-esac
-fi
-
-
-if test "x$enable_native" = "xyes"; then
-	CFLAGS="$CFLAGS -march=native"
-else
-	case "$host_cpu" in
-		arm*)
-			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -mfpu=neon" >&5
+case "$host_cpu" in
+	arm*)
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -mfpu=neon" >&5
 printf %s "checking whether C compiler accepts -mfpu=neon... " >&6; }
 if test ${ax_cv_check_cflags___mfpu_neon+y}
 then :
@@ -15124,16 +15111,77 @@ fi
 printf "%s\n" "$ax_cv_check_cflags___mfpu_neon" >&6; }
 if test "x$ax_cv_check_cflags___mfpu_neon" = xyes
 then :
-  CFLAGS="$CFLAGS -mfpu=neon"
+
+			 CFLAGS="$CFLAGS -mfpu=neon"
+
+printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
+
+
+printf "%s\n" "#define HAVE_SIMD 1" >>confdefs.h
+
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working posix_memalign" >&5
+printf %s "checking for working posix_memalign... " >&6; }
+if test ${ax_cv_func_posix_memalign_works+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test "$cross_compiling" = yes
+then :
+  ax_cv_func_posix_memalign_works=no
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+
+int
+main ()
+{
+  void *buffer;
+
+  /* Some versions of glibc incorrectly perform the alignment check on
+   * the size word. */
+  exit (posix_memalign (&buffer, sizeof(void *), 123) != 0);
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"
+then :
+  ax_cv_func_posix_memalign_works=yes
+else case e in #(
+  e) ax_cv_func_posix_memalign_works=no ;;
+esac
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_func_posix_memalign_works" >&5
+printf "%s\n" "$ax_cv_func_posix_memalign_works" >&6; }
+if test "$ax_cv_func_posix_memalign_works" = "yes" ; then
+
+printf "%s\n" "#define HAVE_POSIX_MEMALIGN 1" >>confdefs.h
+
+fi
+
+
 else case e in #(
   e) : ;;
 esac
 fi
 
+		;;
+	aarch64)
 
 printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
 
-			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working posix_memalign" >&5
+
+printf "%s\n" "#define HAVE_SIMD 1" >>confdefs.h
+
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working posix_memalign" >&5
 printf %s "checking for working posix_memalign... " >&6; }
 if test ${ax_cv_func_posix_memalign_works+y}
 then :
@@ -15181,67 +15229,24 @@ printf "%s\n" "#define HAVE_POSIX_MEMALIGN 1" >>confdefs.h
 
 fi
 
-			;;
-		aarch64)
-
-printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
-
-			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working posix_memalign" >&5
-printf %s "checking for working posix_memalign... " >&6; }
-if test ${ax_cv_func_posix_memalign_works+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test "$cross_compiling" = yes
-then :
-  ax_cv_func_posix_memalign_works=no
-else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdlib.h>
-
-int
-main ()
-{
-  void *buffer;
-
-  /* Some versions of glibc incorrectly perform the alignment check on
-   * the size word. */
-  exit (posix_memalign (&buffer, sizeof(void *), 123) != 0);
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-  ax_cv_func_posix_memalign_works=yes
-else case e in #(
-  e) ax_cv_func_posix_memalign_works=no ;;
+		;;
+	*)
+		;;
 esac
+
+
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether ln -s works" >&5
+printf %s "checking whether ln -s works... " >&6; }
+LN_S=$as_ln_s
+if test "$LN_S" = "ln -s"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, using $LN_S" >&5
+printf "%s\n" "no, using $LN_S" >&6; }
 fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
-esac
-fi
- ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_func_posix_memalign_works" >&5
-printf "%s\n" "$ax_cv_func_posix_memalign_works" >&6; }
-if test "$ax_cv_func_posix_memalign_works" = "yes" ; then
-
-printf "%s\n" "#define HAVE_POSIX_MEMALIGN 1" >>confdefs.h
-
-fi
-
-			;;
-		*)
-			;;
-	esac
-fi
-
-
-
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for inline" >&5
@@ -15464,60 +15469,6 @@ esac
 fi
 
 done
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fabsf in -lm" >&5
-printf %s "checking for fabsf in -lm... " >&6; }
-if test ${ac_cv_lib_m_fabsf+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.
-   The 'extern "C"' is for builds by C++ compilers;
-   although this is not generally supported in C code supporting it here
-   has little cost and some practical benefit (sr 110532).  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char fabsf (void);
-int
-main (void)
-{
-return fabsf ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_m_fabsf=yes
-else case e in #(
-  e) ac_cv_lib_m_fabsf=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_fabsf" >&5
-printf "%s\n" "$ac_cv_lib_m_fabsf" >&6; }
-if test "x$ac_cv_lib_m_fabsf" = xyes
-then :
-  printf "%s\n" "#define HAVE_LIBM 1" >>confdefs.h
-
-  LIBS="-lm $LIBS"
-
-else case e in #(
-  e) as_fn_error $? "Can't find required library" "$LINENO" 5 ;;
-esac
-fi
-
 
 
 
@@ -15909,7 +15860,7 @@ fi
 						 as_fn_error $? "Could not find any pkg-config for lua" "$LINENO" 5
 					 fi
 					 LUA_CPATH=`$LUA -e 'print(package.cpath)'`
-					 LUA_CPATH_FIRST=`echo '$LUA_CPATH' | cut -d';' -f1 | sed 's/?.so//g'`
+					 LUA_CPATH=`echo $LUA_CPATH | cut -d';' -f1 | sed 's/?.so//g'`
 
 
 		;;
@@ -15921,7 +15872,7 @@ fi
 esac
 
 
-ac_config_files="$ac_config_files Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile tests/Makefile tests/lua/Makefile tests/python/Makefile pkgconfig/crunum.pc"
+ac_config_files="$ac_config_files Makefile include/Makefile src/Makefile src/core/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile tests/Makefile tests/lua/Makefile tests/python/Makefile pkgconfig/crunum.pc"
 
 
 cat >confcache <<\_ACEOF
@@ -16966,8 +16917,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
-    "src/matrix/Makefile") CONFIG_FILES="$CONFIG_FILES src/matrix/Makefile" ;;
-    "src/vector/Makefile") CONFIG_FILES="$CONFIG_FILES src/vector/Makefile" ;;
+    "src/core/Makefile") CONFIG_FILES="$CONFIG_FILES src/core/Makefile" ;;
     "src/lua/Makefile") CONFIG_FILES="$CONFIG_FILES src/lua/Makefile" ;;
     "src/python/Makefile") CONFIG_FILES="$CONFIG_FILES src/python/Makefile" ;;
     "pkgconfig/Makefile") CONFIG_FILES="$CONFIG_FILES pkgconfig/Makefile" ;;

@@ -11,8 +11,7 @@
 #define NEAR_ZERO 1e-6
 #define NEON_ALIGNMENT 16
 
-typedef unsigned int uint;
-typedef unsigned long ulong;
+#include "crunum.h"
 
 #if HAVE_NEON
 #include <arm_neon.h>
@@ -59,5 +58,7 @@ static inline uint any_lane_is_zero(float32x4_t v){
 }
 
 #endif
+
+void* malloc_aligned(uint alignment, uint size);
 
 #endif

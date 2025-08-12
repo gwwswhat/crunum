@@ -4,10 +4,11 @@ AC_COPYRIGHT([
 							This file is licensed under the GPL-3.0 License. See LICENSE for details.
 							])
 AC_INIT([crunum], [0.0.0], [gwwswhat@gmail.com])
+AC_SUBST([VERSION], [0.0.0])
 AM_INIT_AUTOMAKE([-Wall subdir-objects])
 AM_PROG_AR
 LT_INIT
-AC_CONFIG_SRCDIR([src/matrix/matrix_core.c])
+AC_CONFIG_SRCDIR([src/core/matrix_core.c])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_HEADERS([include/config.h])
 
@@ -59,34 +60,30 @@ else
 		[])
 fi
 
-AC_ARG_ENABLE([native],
-	[AS_HELP_STRING([--enable-native], [Enable -march=native flag])],
-	[enable_native=yes],
-	[enable_native=no])
-
-if test "x$enable_native" = "xyes"; then
-	CFLAGS="$CFLAGS -march=native"
-else
-	case "$host_cpu" in
-		arm*)
-			AX_CHECK_COMPILE_FLAG([-mfpu=neon],
-														[CFLAGS="$CFLAGS -mfpu=neon"],
-														[])
-			AC_DEFINE([HAVE_NEON], [1], [Define if CPU have NEON support])
-			AX_FUNC_POSIX_MEMALIGN
-			;;
-		aarch64)
-			AC_DEFINE([HAVE_NEON], [1], [Define if CPU have NEON support])
-			AX_FUNC_POSIX_MEMALIGN
-			;;
-		*)
-			;;
-	esac
-fi
+case "$host_cpu" in
+	arm*)
+		AX_CHECK_COMPILE_FLAG([-mfpu=neon],
+			[
+			 CFLAGS="$CFLAGS -mfpu=neon"
+			 AC_DEFINE([HAVE_NEON], [1], [Define if CPU have NEON support])
+			 AC_DEFINE([HAVE_SIMD], [1], [Define if CPU have SIMD support])
+			 AX_FUNC_POSIX_MEMALIGN
+			],
+			[])
+		;;
+	aarch64)
+		AC_DEFINE([HAVE_NEON], [1], [Define if CPU have NEON support])
+		AC_DEFINE([HAVE_SIMD], [1], [Define if CPU have SIMD support])
+		AX_FUNC_POSIX_MEMALIGN
+		;;
+	*)
+		;;
+esac
 
 AC_SUBST([CFLAGS])
 
 AC_PROG_INSTALL
+AC_PROG_LN_S
 
 AC_C_INLINE
 
@@ -97,8 +94,6 @@ AC_CHECK_HEADERS([stdlib.h string.h math.h time.h stddef.h], [], [
 	AC_MSG_ERROR([Can't find required headers])])
 AC_CHECK_FUNCS([srand time rand], [], [
 	AC_MSG_ERROR([Can't find required functions])])
-AC_CHECK_LIB([m], [fabsf], [], 
-	[AC_MSG_ERROR([Can't find required library])])
 
 PKG_PROG_PKG_CONFIG
 
@@ -114,8 +109,8 @@ m4_define([CHECK_LUA_MODULES], [
 						 AC_MSG_ERROR([Could not find any pkg-config for lua])
 					 fi
 					 LUA_CPATH=`$LUA -e 'print(package.cpath)'`
-					 LUA_CPATH_FIRST=`echo '$LUA_CPATH' | cut -d';' -f1 | sed 's/?.so//g'`
-					 AC_SUBST([LUA_CPATH_FIRST])
+					 LUA_CPATH=`echo $LUA_CPATH | cut -d';' -f1 | sed 's/?.so//g'`
+					 AC_SUBST([LUA_CPATH])
 					 ])
 
 AC_MSG_CHECKING([target language])
@@ -140,6 +135,6 @@ case "$target_lang" in
 esac
 AC_SUBST([target_lang])
 
-AC_CONFIG_FILES([Makefile include/Makefile src/Makefile src/matrix/Makefile src/vector/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile tests/Makefile tests/lua/Makefile tests/python/Makefile pkgconfig/crunum.pc])
+AC_CONFIG_FILES([Makefile include/Makefile src/Makefile src/core/Makefile src/lua/Makefile src/python/Makefile pkgconfig/Makefile tests/Makefile tests/lua/Makefile tests/python/Makefile pkgconfig/crunum.pc])
 
 AC_OUTPUT

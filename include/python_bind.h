@@ -3,8 +3,7 @@
 
 #include <Python.h>
 
-#include "matrix.h"
-#include "vector.h"
+#include "crunum.h"
 
 struct CrunumMatrix {
 	PyObject_HEAD

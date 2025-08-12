@@ -221,7 +221,7 @@ LTLIBOBJS = @LTLIBOBJS@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 LUA = @LUA@
 LUA_CFLAGS = @LUA_CFLAGS@
-LUA_CPATH_FIRST = @LUA_CPATH_FIRST@
+LUA_CPATH = @LUA_CPATH@
 LUA_LIBS = @LUA_LIBS@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -309,8 +309,8 @@ target_lang = @target_lang@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-crunum_includedir = $(includedir)/crunum
-crunum_include_HEADERS = matrix.h vector.h
+crunum_includedir = $(includedir)/crunum@VERSION@
+crunum_include_HEADERS = crunum.h
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

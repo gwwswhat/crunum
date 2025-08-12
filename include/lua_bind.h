@@ -5,8 +5,7 @@
 #include <lua5.4/lauxlib.h>
 #include <lua5.4/lualib.h>
 
-#include "matrix.h"
-#include "vector.h"
+#include "crunum.h"
 
 extern const luaL_Reg matrix_methods[];
 extern const luaL_Reg matrix_functions[];

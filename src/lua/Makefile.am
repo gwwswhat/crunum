@@ -3,18 +3,17 @@
 #
 # This file is licensed under the GPL-3.0 License. See LICENSE for details.
 
-lua_pkgdir = @LUA_CPATH_FIRST@
-lua_pkg_LTLIBRARIES = libcrunum.la
+lua_pkgdir = @LUA_CPATH@
+lua_pkg_LTLIBRARIES = libluacrunum.la
 
-libcrunum_la_SOURCES = crunum.c matrix.c vector.c
-libcrunum_la_CPPFLAGS = -I$(top_srcdir)/include $(LUA_CFLAGS)
-libcrunum_la_CFLAGS = @CFLAGS@ $(LUA_CFLAGS)
-libcrunum_la_LDFLAGS = $(LUA_LIBS)
-libcrunum_la_LIBADD = $(top_srcdir)/src/matrix/libmatrix.la \
-											$(top_srcdir)/src/vector/libvector.la
+libluacrunum_la_SOURCES = crunum.c matrix.c vector.c
+libluacrunum_la_CPPFLAGS = -I$(top_srcdir)/include $(LUA_CFLAGS)
+libluacrunum_la_CFLAGS = @CFLAGS@ $(LUA_CFLAGS)
+libluacrunum_la_LDFLAGS = $(LUA_LIBS)
+libluacrunum_la_LIBADD = $(top_srcdir)/src/core/libcrunum.la
 
 install-exec-local:
-	ln -sf $(DESTDIR)$(lua_pkgdir)/libcrunum.so $(DESTDIR)$(lua_pkgdir)/crunum.so
+	ln -sf $(DESTDIR)$(lua_pkgdir)/libluacrunum.so $(DESTDIR)$(lua_pkgdir)/crunum.so
 
 uninstall-local:
 	rm -f $(DESTDIR)$(lua_pkgdir)/crunum.so

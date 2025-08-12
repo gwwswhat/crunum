@@ -136,18 +136,18 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(python_pkgdir)"
 LTLIBRARIES = $(python_pkg_LTLIBRARIES)
-libcrunum_la_DEPENDENCIES = $(top_srcdir)/src/matrix/libmatrix.la \
-	$(top_srcdir)/src/vector/libvector.la
-am_libcrunum_la_OBJECTS = libcrunum_la-crunum.lo \
-	libcrunum_la-matrix.lo libcrunum_la-vector.lo
-libcrunum_la_OBJECTS = $(am_libcrunum_la_OBJECTS)
+libpycrunum_la_DEPENDENCIES = $(top_srcdir)/src/core/libcrunum.la
+am_libpycrunum_la_OBJECTS = libpycrunum_la-crunum.lo \
+	libpycrunum_la-matrix.lo libpycrunum_la-vector.lo
+libpycrunum_la_OBJECTS = $(am_libpycrunum_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libcrunum_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libcrunum_la_CFLAGS) \
-	$(CFLAGS) $(libcrunum_la_LDFLAGS) $(LDFLAGS) -o $@
+libpycrunum_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libpycrunum_la_CFLAGS) $(CFLAGS) $(libpycrunum_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -163,9 +163,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/libcrunum_la-crunum.Plo \
-	./$(DEPDIR)/libcrunum_la-matrix.Plo \
-	./$(DEPDIR)/libcrunum_la-vector.Plo
+am__depfiles_remade = ./$(DEPDIR)/libpycrunum_la-crunum.Plo \
+	./$(DEPDIR)/libpycrunum_la-matrix.Plo \
+	./$(DEPDIR)/libpycrunum_la-vector.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -185,8 +185,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libcrunum_la_SOURCES)
-DIST_SOURCES = $(libcrunum_la_SOURCES)
+SOURCES = $(libpycrunum_la_SOURCES)
+DIST_SOURCES = $(libpycrunum_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -256,7 +256,7 @@ LTLIBOBJS = @LTLIBOBJS@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 LUA = @LUA@
 LUA_CFLAGS = @LUA_CFLAGS@
-LUA_CPATH_FIRST = @LUA_CPATH_FIRST@
+LUA_CPATH = @LUA_CPATH@
 LUA_LIBS = @LUA_LIBS@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -345,14 +345,12 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 python_pkgdir = @PYTHON_SITE_PACKAGES@
-python_pkg_LTLIBRARIES = libcrunum.la
-libcrunum_la_SOURCES = crunum.c matrix.c vector.c
-libcrunum_la_CPPFLAGS = -I$(top_srcdir)/include
-libcrunum_la_CFLAGS = @CFLAGS@ $(PYTHON_CFLAGS)
-libcrunum_la_LDFLAGS = -module -avoid-version $(PYTHON_LIBS)
-libcrunum_la_LIBADD = $(top_srcdir)/src/matrix/libmatrix.la \
-											$(top_srcdir)/src/vector/libvector.la
-
+python_pkg_LTLIBRARIES = libpycrunum.la
+libpycrunum_la_SOURCES = crunum.c matrix.c vector.c
+libpycrunum_la_CPPFLAGS = -I$(top_srcdir)/include
+libpycrunum_la_CFLAGS = @CFLAGS@ $(PYTHON_CFLAGS)
+libpycrunum_la_LDFLAGS = -module -avoid-version $(PYTHON_LIBS)
+libpycrunum_la_LIBADD = $(top_srcdir)/src/core/libcrunum.la
 all: all-am
 
 .SUFFIXES:
@@ -420,8 +418,8 @@ clean-python_pkgLTLIBRARIES:
 	echo rm -f $${locs}; \
 	$(am__rm_f) $${locs}
 
-libcrunum.la: $(libcrunum_la_OBJECTS) $(libcrunum_la_DEPENDENCIES) $(EXTRA_libcrunum_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libcrunum_la_LINK) -rpath $(python_pkgdir) $(libcrunum_la_OBJECTS) $(libcrunum_la_LIBADD) $(LIBS)
+libpycrunum.la: $(libpycrunum_la_OBJECTS) $(libpycrunum_la_DEPENDENCIES) $(EXTRA_libpycrunum_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libpycrunum_la_LINK) -rpath $(python_pkgdir) $(libpycrunum_la_OBJECTS) $(libpycrunum_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -429,9 +427,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcrunum_la-crunum.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcrunum_la-matrix.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcrunum_la-vector.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libpycrunum_la-crunum.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libpycrunum_la-matrix.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libpycrunum_la-vector.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -463,26 +461,26 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-libcrunum_la-crunum.lo: crunum.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrunum_la_CPPFLAGS) $(CPPFLAGS) $(libcrunum_la_CFLAGS) $(CFLAGS) -MT libcrunum_la-crunum.lo -MD -MP -MF $(DEPDIR)/libcrunum_la-crunum.Tpo -c -o libcrunum_la-crunum.lo `test -f 'crunum.c' || echo '$(srcdir)/'`crunum.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcrunum_la-crunum.Tpo $(DEPDIR)/libcrunum_la-crunum.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='crunum.c' object='libcrunum_la-crunum.lo' libtool=yes @AMDEPBACKSLASH@
+libpycrunum_la-crunum.lo: crunum.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libpycrunum_la_CPPFLAGS) $(CPPFLAGS) $(libpycrunum_la_CFLAGS) $(CFLAGS) -MT libpycrunum_la-crunum.lo -MD -MP -MF $(DEPDIR)/libpycrunum_la-crunum.Tpo -c -o libpycrunum_la-crunum.lo `test -f 'crunum.c' || echo '$(srcdir)/'`crunum.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libpycrunum_la-crunum.Tpo $(DEPDIR)/libpycrunum_la-crunum.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='crunum.c' object='libpycrunum_la-crunum.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrunum_la_CPPFLAGS) $(CPPFLAGS) $(libcrunum_la_CFLAGS) $(CFLAGS) -c -o libcrunum_la-crunum.lo `test -f 'crunum.c' || echo '$(srcdir)/'`crunum.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libpycrunum_la_CPPFLAGS) $(CPPFLAGS) $(libpycrunum_la_CFLAGS) $(CFLAGS) -c -o libpycrunum_la-crunum.lo `test -f 'crunum.c' || echo '$(srcdir)/'`crunum.c
 
-libcrunum_la-matrix.lo: matrix.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrunum_la_CPPFLAGS) $(CPPFLAGS) $(libcrunum_la_CFLAGS) $(CFLAGS) -MT libcrunum_la-matrix.lo -MD -MP -MF $(DEPDIR)/libcrunum_la-matrix.Tpo -c -o libcrunum_la-matrix.lo `test -f 'matrix.c' || echo '$(srcdir)/'`matrix.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcrunum_la-matrix.Tpo $(DEPDIR)/libcrunum_la-matrix.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='matrix.c' object='libcrunum_la-matrix.lo' libtool=yes @AMDEPBACKSLASH@
+libpycrunum_la-matrix.lo: matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libpycrunum_la_CPPFLAGS) $(CPPFLAGS) $(libpycrunum_la_CFLAGS) $(CFLAGS) -MT libpycrunum_la-matrix.lo -MD -MP -MF $(DEPDIR)/libpycrunum_la-matrix.Tpo -c -o libpycrunum_la-matrix.lo `test -f 'matrix.c' || echo '$(srcdir)/'`matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libpycrunum_la-matrix.Tpo $(DEPDIR)/libpycrunum_la-matrix.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='matrix.c' object='libpycrunum_la-matrix.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrunum_la_CPPFLAGS) $(CPPFLAGS) $(libcrunum_la_CFLAGS) $(CFLAGS) -c -o libcrunum_la-matrix.lo `test -f 'matrix.c' || echo '$(srcdir)/'`matrix.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libpycrunum_la_CPPFLAGS) $(CPPFLAGS) $(libpycrunum_la_CFLAGS) $(CFLAGS) -c -o libpycrunum_la-matrix.lo `test -f 'matrix.c' || echo '$(srcdir)/'`matrix.c
 
-libcrunum_la-vector.lo: vector.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrunum_la_CPPFLAGS) $(CPPFLAGS) $(libcrunum_la_CFLAGS) $(CFLAGS) -MT libcrunum_la-vector.lo -MD -MP -MF $(DEPDIR)/libcrunum_la-vector.Tpo -c -o libcrunum_la-vector.lo `test -f 'vector.c' || echo '$(srcdir)/'`vector.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcrunum_la-vector.Tpo $(DEPDIR)/libcrunum_la-vector.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vector.c' object='libcrunum_la-vector.lo' libtool=yes @AMDEPBACKSLASH@
+libpycrunum_la-vector.lo: vector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libpycrunum_la_CPPFLAGS) $(CPPFLAGS) $(libpycrunum_la_CFLAGS) $(CFLAGS) -MT libpycrunum_la-vector.lo -MD -MP -MF $(DEPDIR)/libpycrunum_la-vector.Tpo -c -o libpycrunum_la-vector.lo `test -f 'vector.c' || echo '$(srcdir)/'`vector.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libpycrunum_la-vector.Tpo $(DEPDIR)/libpycrunum_la-vector.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vector.c' object='libpycrunum_la-vector.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrunum_la_CPPFLAGS) $(CPPFLAGS) $(libcrunum_la_CFLAGS) $(CFLAGS) -c -o libcrunum_la-vector.lo `test -f 'vector.c' || echo '$(srcdir)/'`vector.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libpycrunum_la_CPPFLAGS) $(CPPFLAGS) $(libpycrunum_la_CFLAGS) $(CFLAGS) -c -o libpycrunum_la-vector.lo `test -f 'vector.c' || echo '$(srcdir)/'`vector.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -617,9 +615,9 @@ clean-am: clean-generic clean-libtool clean-python_pkgLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
-	-rm -f ./$(DEPDIR)/libcrunum_la-crunum.Plo
-	-rm -f ./$(DEPDIR)/libcrunum_la-matrix.Plo
-	-rm -f ./$(DEPDIR)/libcrunum_la-vector.Plo
+	-rm -f ./$(DEPDIR)/libpycrunum_la-crunum.Plo
+	-rm -f ./$(DEPDIR)/libpycrunum_la-matrix.Plo
+	-rm -f ./$(DEPDIR)/libpycrunum_la-vector.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -665,9 +663,9 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -f ./$(DEPDIR)/libcrunum_la-crunum.Plo
-	-rm -f ./$(DEPDIR)/libcrunum_la-matrix.Plo
-	-rm -f ./$(DEPDIR)/libcrunum_la-vector.Plo
+	-rm -f ./$(DEPDIR)/libpycrunum_la-crunum.Plo
+	-rm -f ./$(DEPDIR)/libpycrunum_la-matrix.Plo
+	-rm -f ./$(DEPDIR)/libpycrunum_la-vector.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -708,7 +706,8 @@ uninstall-am: uninstall-local uninstall-python_pkgLTLIBRARIES
 
 
 install-exec-local:
-	ln -sf $(DESTDIR)$(python_pkgdir)/libcrunum.so $(DESTDIR)$(python_pkgdir)/crunum.so
+	@rm -f $(DESTDIR)/$(python_pkgdir)/crunum.so 
+	$(LN_S) $(DESTDIR)$(python_pkgdir)/libpycrunum.so $(DESTDIR)$(python_pkgdir)/crunum.so
 
 uninstall-local:
 	rm -f $(DESTDIR)$(python_pkgdir)/crunum.so
