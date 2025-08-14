@@ -9,6 +9,8 @@
 
 #include "lua_bind.h"
 
+#include <stdio.h>
+
 static int l_matrix_new(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);
 	int cols = luaL_checkinteger(lua, 2);
@@ -448,7 +450,7 @@ static int l_matrix_eq(lua_State* lua){
 					matrix1, luaL_checknumber(lua, 2)));
 		return 1;
 	}
-	struct Matrix* matrix2 = luaL_checkudata(lua, 2, "CrunumMatrix");
+	struct Matrix* matrix2 = *(struct Matrix**)luaL_checkudata(lua, 2, "CrunumMatrix");
 	if(matrix1->rows != matrix2->rows ||
 			matrix1->cols != matrix2->cols){
 		luaL_error(lua, "Both matrix aren't the same size");

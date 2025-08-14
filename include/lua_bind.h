@@ -1,6 +1,8 @@
 #ifndef CRUNUM_LUA
 #define CRUNUM_LUA
 
+#include "config.h"
+
 #include <lua5.4/lua.h>
 #include <lua5.4/lauxlib.h>
 #include <lua5.4/lualib.h>

@@ -64,6 +64,12 @@ print("Identity matrix: ", crn.matrix.identity(10))
 
 mat2:reshape(10, 2)
 
+print(mat2:rows())
+print(mat2:cols())
+
+print(mat1:rows())
+print(mat1:cols())
+
 print("Matrix 1 ~= Matrix 2: ", mat1 ~= mat2)
 
 print("Identity == Identity: ", crn.matrix.identity(10) == crn.matrix.identity(10))
