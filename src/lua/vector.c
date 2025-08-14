@@ -22,6 +22,19 @@ static int l_vector_new(lua_State* lua){
 	return 1;
 }
 
+static int l_vector_init(lua_State* lua){
+	int len = luaL_checkinteger(lua, 1);
+	if(len < 0){
+		luaL_error(lua, "Vector length can't be negative");
+		return 0;
+	}
+	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
+	*vector = vector_new((uint)len, (float)luaL_checknumber(lua, 2));
+	luaL_getmetatable(lua, "CrunumVector");
+	lua_setmetatable(lua, -2);
+	return 1;
+}
+
 static int l_vector_randinit(lua_State* lua){
 	int len = luaL_checkinteger(lua, 1);
 	if(len < 0){

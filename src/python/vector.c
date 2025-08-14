@@ -21,6 +21,19 @@ static struct CrunumVector* crn_vector_new(PyObject* self, PyObject* args){
 	return crn_vector;
 }
 
+static struct CrunumVector* crn_vector_init(PyObject* self, PyObject* args){
+	(void)self;
+	uint len;
+	double value;
+	if(!PyArg_ParseTuple(args, "Id", &len, &value))
+		return NULL;
+	struct CrunumVector* crn_vector = PyObject_New(struct CrunumVector, &crn_vector_type);
+	if(!crn_vector)
+		return NULL;
+	crn_vector->vector = vector_init(len, (float)value);
+	return crn_vector;
+}
+
 static struct CrunumVector* crn_vector_randinit(PyObject* self, PyObject* args){
 	(void)self;
 	uint len;
@@ -367,6 +380,12 @@ PyMethodDef crn_vector_methods[] = {
 		"Return: Vector,\n"
 		"Desc: Create a new vector\n"
 		"Example: crn.vector.new(10)"
+	},
+	{"init", (PyCFunction)crn_vector_init, METH_VARARGS,
+		"Params: len, value,\n"
+		"Return: Vector,\n"
+		"Desc: Create a new vector with default value\n"
+		"Example: crn.vector.init(10, 2.3)"
 	},
 	{"randinit", (PyCFunction)crn_vector_randinit, METH_VARARGS,
 		"Params: len,\n"

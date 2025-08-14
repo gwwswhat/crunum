@@ -21,6 +21,20 @@ static struct CrunumMatrix* crn_matrix_new(PyObject* self, PyObject* args){
 	return crn_matrix;
 }
 
+static struct CrunumMatrix* crn_matrix_init(PyObject* self, PyObject* args){
+	(void)self;
+	uint rows, cols;
+	double value;
+	if(!PyArg_ParseTuple(args, "IId", &rows, &cols, &value))
+		return NULL;
+	struct CrunumMatrix* crn_matrix = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
+	if(!crn_matrix)
+		return NULL;
+	crn_matrix->matrix = matrix_init(rows, cols, (float)value);
+	return crn_matrix;
+}
+
+
 static struct CrunumMatrix* crn_matrix_randinit(PyObject* self, PyObject* args){
 	(void)self;
 	uint rows, cols;
@@ -549,6 +563,12 @@ PyMethodDef crn_matrix_methods[] = {
 		"Return: Matrix,\n"
 		"Desc: Create a new matrix\n"
 		"Example: crn.matrix.new(10, 10)"
+	},
+	{"init", (PyCFunction)crn_matrix_init, METH_VARARGS,
+		"Params: rows, cols, value,\n"
+		"Return: Matrix,\n"
+		"Desc: Create a new matrix with default value\n"
+		"Example: crn.matrix.init(3, 4, 2.2)"
 	},
 	{"randinit", (PyCFunction)crn_matrix_randinit, METH_VARARGS,
 		"Params: rows, cols,\n"

@@ -23,6 +23,21 @@ static int l_matrix_new(lua_State* lua){
 	return 1;
 }
 
+static int l_matrix_init(lua_State* lua){
+	int rows = luaL_checkinteger(lua, 1);
+	int cols = luaL_checkinteger(lua, 2);
+	if(rows < 0 || cols < 0){
+		luaL_error(lua, "Matrix dimension can't be negative");
+		return 0;
+	}
+	struct Matrix** matrix = lua_newuserdata(lua, sizeof(struct Matrix*));
+	*matrix = matrix_init((uint)rows, (uint)cols, 
+			(float)luaL_checknumber(lua, 3));
+	luaL_getmetatable(lua, "CrunumMatrix");
+	lua_setmetatable(lua, -2);
+	return 1;
+}
+
 static int l_matrix_randinit(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);
 	int cols = luaL_checkinteger(lua, 2);
@@ -575,6 +590,7 @@ static int l_matrix_le(lua_State* lua){
 
 const luaL_Reg matrix_functions[] = {
 	{"new", l_matrix_new},
+	{"init", l_matrix_init},
 	{"randinit", l_matrix_randinit},
 	{"from", l_matrix_from},
 	{"identity", l_matrix_identity},
