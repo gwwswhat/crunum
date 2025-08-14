@@ -134,8 +134,8 @@ am__uninstall_files_from_dir = { \
   || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
        $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
   }
-am__installdirs = "$(DESTDIR)$(python_pkgdir)"
-LTLIBRARIES = $(python_pkg_LTLIBRARIES)
+am__installdirs = "$(DESTDIR)$(python_libdir)"
+LTLIBRARIES = $(python_lib_LTLIBRARIES)
 libpycrunum_la_DEPENDENCIES = $(top_srcdir)/src/core/libcrunum.la
 am_libpycrunum_la_OBJECTS = libpycrunum_la-crunum.lo \
 	libpycrunum_la-matrix.lo libpycrunum_la-vector.lo
@@ -254,9 +254,7 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
-LUA = @LUA@
 LUA_CFLAGS = @LUA_CFLAGS@
-LUA_CPATH = @LUA_CPATH@
 LUA_LIBS = @LUA_LIBS@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -278,10 +276,8 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
-PYTHON = @PYTHON@
 PYTHON_CFLAGS = @PYTHON_CFLAGS@
 PYTHON_LIBS = @PYTHON_LIBS@
-PYTHON_SITE_PACKAGES = @PYTHON_SITE_PACKAGES@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -344,8 +340,8 @@ target_lang = @target_lang@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-python_pkgdir = @PYTHON_SITE_PACKAGES@
-python_pkg_LTLIBRARIES = libpycrunum.la
+python_libdir = /
+python_lib_LTLIBRARIES = libpycrunum.la
 libpycrunum_la_SOURCES = crunum.c matrix.c vector.c
 libpycrunum_la_CPPFLAGS = -I$(top_srcdir)/include
 libpycrunum_la_CFLAGS = @CFLAGS@ $(PYTHON_CFLAGS)
@@ -385,33 +381,33 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
-install-python_pkgLTLIBRARIES: $(python_pkg_LTLIBRARIES)
+install-python_libLTLIBRARIES: $(python_lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
-	@list='$(python_pkg_LTLIBRARIES)'; test -n "$(python_pkgdir)" || list=; \
+	@list='$(python_lib_LTLIBRARIES)'; test -n "$(python_libdir)" || list=; \
 	list2=; for p in $$list; do \
 	  if test -f $$p; then \
 	    list2="$$list2 $$p"; \
 	  else :; fi; \
 	done; \
 	test -z "$$list2" || { \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(python_pkgdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(python_pkgdir)" || exit 1; \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(python_pkgdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(python_pkgdir)"; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(python_libdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(python_libdir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(python_libdir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(python_libdir)"; \
 	}
 
-uninstall-python_pkgLTLIBRARIES:
+uninstall-python_libLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(python_pkg_LTLIBRARIES)'; test -n "$(python_pkgdir)" || list=; \
+	@list='$(python_lib_LTLIBRARIES)'; test -n "$(python_libdir)" || list=; \
 	for p in $$list; do \
 	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(python_pkgdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(python_pkgdir)/$$f"; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(python_libdir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(python_libdir)/$$f"; \
 	done
 
-clean-python_pkgLTLIBRARIES:
-	-$(am__rm_f) $(python_pkg_LTLIBRARIES)
-	@list='$(python_pkg_LTLIBRARIES)'; \
+clean-python_libLTLIBRARIES:
+	-$(am__rm_f) $(python_lib_LTLIBRARIES)
+	@list='$(python_lib_LTLIBRARIES)'; \
 	locs=`for p in $$list; do echo $$p; done | \
 	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
 	      sort -u`; \
@@ -419,7 +415,7 @@ clean-python_pkgLTLIBRARIES:
 	$(am__rm_f) $${locs}
 
 libpycrunum.la: $(libpycrunum_la_OBJECTS) $(libpycrunum_la_DEPENDENCIES) $(EXTRA_libpycrunum_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libpycrunum_la_LINK) -rpath $(python_pkgdir) $(libpycrunum_la_OBJECTS) $(libpycrunum_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libpycrunum_la_LINK) -rpath $(python_libdir) $(libpycrunum_la_OBJECTS) $(libpycrunum_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -576,13 +572,11 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(python_pkgdir)"; do \
+	for dir in "$(DESTDIR)$(python_libdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
-uninstall: uninstall-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
@@ -611,7 +605,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-python_pkgLTLIBRARIES \
+clean-am: clean-generic clean-libtool clean-python_libLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -634,13 +628,13 @@ info: info-am
 
 info-am:
 
-install-data-am: install-python_pkgLTLIBRARIES
+install-data-am: install-python_libLTLIBRARIES
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-exec-local
+install-exec-am:
 
 install-html: install-html-am
 
@@ -682,35 +676,35 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-local uninstall-python_pkgLTLIBRARIES
+uninstall-am: uninstall-python_libLTLIBRARIES
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
-	clean-generic clean-libtool clean-python_pkgLTLIBRARIES \
+	clean-generic clean-libtool clean-python_libLTLIBRARIES \
 	cscopelist-am ctags ctags-am distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-exec-local install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-python_pkgLTLIBRARIES install-strip installcheck \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am \
+	install-python_libLTLIBRARIES install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-local \
-	uninstall-python_pkgLTLIBRARIES
+	tags tags-am uninstall uninstall-am \
+	uninstall-python_libLTLIBRARIES
 
 .PRECIOUS: Makefile
 
 
-install-exec-local:
-	@rm -f $(DESTDIR)/$(python_pkgdir)/crunum.so 
-	$(LN_S) $(DESTDIR)$(python_pkgdir)/libpycrunum.so $(DESTDIR)$(python_pkgdir)/crunum.so
+install:
+	@printf "copy/move/symlink the library instead manually,\n"
+	@printf "and rename it into crunum.so\n"
 
-uninstall-local:
-	rm -f $(DESTDIR)$(python_pkgdir)/crunum.so
+uninstall:
+	@printf "remove the library manually instead\n"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

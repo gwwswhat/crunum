@@ -5,6 +5,3 @@
 
 TESTS = matrix.lua vector.lua
 EXTRA_DIST = $(TESTS)
-
-check-local:
-	chmod +x $(TESTS)

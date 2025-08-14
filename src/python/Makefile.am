@@ -3,8 +3,8 @@
 #
 # This file is licensed under the GPL-3.0 License. See LICENSE for details.
 
-python_pkgdir = @PYTHON_SITE_PACKAGES@
-python_pkg_LTLIBRARIES = libpycrunum.la
+python_libdir = /
+python_lib_LTLIBRARIES = libpycrunum.la
 
 libpycrunum_la_SOURCES = crunum.c matrix.c vector.c
 libpycrunum_la_CPPFLAGS = -I$(top_srcdir)/include
@@ -12,9 +12,9 @@ libpycrunum_la_CFLAGS = @CFLAGS@ $(PYTHON_CFLAGS)
 libpycrunum_la_LDFLAGS = -module -avoid-version $(PYTHON_LIBS)
 libpycrunum_la_LIBADD = $(top_srcdir)/src/core/libcrunum.la
 
-install-exec-local:
-	@rm -f $(DESTDIR)/$(python_pkgdir)/crunum.so 
-	$(LN_S) $(DESTDIR)$(python_pkgdir)/libpycrunum.so $(DESTDIR)$(python_pkgdir)/crunum.so
+install:
+	@printf "copy/move/symlink the library instead manually,\n"
+	@printf "and rename it into crunum.so\n"
 
-uninstall-local:
-	rm -f $(DESTDIR)$(python_pkgdir)/crunum.so
+uninstall:
+	@printf "remove the library manually instead\n"

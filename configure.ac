@@ -3,8 +3,7 @@ AC_COPYRIGHT([
 							Copyright (C) 2025 Vgwws
 							This file is licensed under the GPL-3.0 License. See LICENSE for details.
 							])
-AC_INIT([crunum], [0.0.0], [gwwswhat@gmail.com])
-AC_SUBST([VERSION], [0.0.0])
+AC_INIT([crunum], [0.0], [gwwswhat@gmail.com])
 AM_INIT_AUTOMAKE([-Wall subdir-objects])
 AM_PROG_AR
 LT_INIT
@@ -25,8 +24,27 @@ AM_CONDITIONAL([TARGET_PYTHON], [test "x$target_lang" = "xpython"])
 AM_CONDITIONAL([TARGET_LUA], [test "x$target_lang" = "xlua"])
 AM_CONDITIONAL([TARGET_C], [test "x$target_lang" = "xc"])
 
-AC_CANONICAL_HOST
 AC_PROG_CC
+
+m4_define([SUPPORT_C99_GNU],
+	[
+	 AC_MSG_CHECKING([whether C compiler support C99 + GNU])
+	 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+	 [[
+		int main(void){
+			int func(void){
+				for(int i = 0; i < 100; i++){
+					return i;
+				}
+			}
+		  return 0;
+		}
+	 ]], [[]])],
+	 [AC_MSG_RESULT([yes])],
+	 [
+		AC_MSG_RESULT([no])
+		AC_MSG_ERROR([C compiler couldn't support C99 + GNU])
+	 ])])
 
 AX_CHECK_COMPILE_FLAG([-Wall],
 	[CFLAGS="$CFLAGS -Wall"],
@@ -39,7 +57,7 @@ AX_CHECK_COMPILE_FLAG([-Werror],
 	[])
 AX_CHECK_COMPILE_FLAG([-std=gnu99],
 	[CFLAGS="$CFLAGS -std=gnu99"],
-	[AC_MSG_ERROR([No -std=gnu99 support])])
+	[SUPPORT_C99_GNU])
 
 AC_ARG_ENABLE([debug],
 	[AS_HELP_STRING([--enable-debug], [Enable debug build flags])],
@@ -59,6 +77,8 @@ else
 		[CFLAGS="$CFLAGS -O2"],
 		[])
 fi
+
+AC_CANONICAL_HOST
 
 case "$host_cpu" in
 	arm*)
@@ -83,7 +103,6 @@ esac
 AC_SUBST([CFLAGS])
 
 AC_PROG_INSTALL
-AC_PROG_LN_S
 
 AC_C_INLINE
 
@@ -97,22 +116,6 @@ AC_CHECK_FUNCS([srand time rand], [], [
 
 PKG_PROG_PKG_CONFIG
 
-m4_define([CHECK_LUA_MODULES], [
-					 LUA_PKGS="lua5.1 lua-5.1 lua51 lua5.2 lua-5.2 lua52 lua5.3 lua-5.3 lua53 lua5.4 lua-5.4 lua54"
-					 for pkg in $LUA_PKGS; do
-						 PKG_CHECK_MODULES([LUA], [$pkg], [
-							AC_PATH_PROG([LUA], [$pkg lua])
-							break
-							], true)
-					 done
-					 if test "x$LUA_LIBS" = "x"; then
-						 AC_MSG_ERROR([Could not find any pkg-config for lua])
-					 fi
-					 LUA_CPATH=`$LUA -e 'print(package.cpath)'`
-					 LUA_CPATH=`echo $LUA_CPATH | cut -d';' -f1 | sed 's/?.so//g'`
-					 AC_SUBST([LUA_CPATH])
-					 ])
-
 AC_MSG_CHECKING([target language])
 AC_MSG_RESULT([$target_lang])
 
@@ -120,12 +123,15 @@ case "$target_lang" in
 	python)
 		PKG_CHECK_MODULES([PYTHON], [python3], [],
 			[AC_MSG_ERROR([Can't find pkg-config for python3])])
-		AC_PATH_PROG([PYTHON], [python3 python])
-		PYTHON_SITE_PACKAGES=`$PYTHON -m site --user-site`
-		AC_SUBST([PYTHON_SITE_PACKAGES])
 		;;
 	lua)
-		CHECK_LUA_MODULES
+	  LUA_PKGS="lua5.1 lua-5.1 lua51 lua5.2 lua-5.2 lua52 lua5.3 lua-5.3 lua53 lua5.4 lua-5.4 lua54"
+		for pkg in $LUA_PKGS; do
+			PKG_CHECK_MODULES([LUA], [$pkg], [break], true)
+		done
+		if test "x$LUA_LIBS" = "x"; then
+			AC_MSG_ERROR([Could not find any pkg-config for lua])
+		fi
 		;;
 	c)
 		;;

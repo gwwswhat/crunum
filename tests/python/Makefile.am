@@ -5,6 +5,3 @@
 
 TESTS = matrix.py vector.py
 EXTRA_DIST = $(TESTS)
-
-check-local:
-	chmod +x $(TESTS)

@@ -23,17 +23,9 @@ Clone this repository
 ```bash
 git clone https://github.com/Vgwws/crunum.git
 ```
-Configure it
+Configure and build it
 ```bash
-./configure --with-target=<language>
-```
-Install it
-```bash
-make install
-```
-If you want to uninstall it
-```bash
-make uninstall
+./configure --with-target=<language> && make
 ```
 
 ## Examples Code
