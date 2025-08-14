@@ -9,8 +9,6 @@
 
 #include "lua_bind.h"
 
-#include <stdio.h>
-
 static int l_matrix_new(lua_State* lua){
 	int rows = luaL_checkinteger(lua, 1);
 	int cols = luaL_checkinteger(lua, 2);
