@@ -12,28 +12,16 @@
 static struct CrunumMatrix* crn_matrix_new(PyObject* self, PyObject* args){
 	(void)self;
 	uint rows, cols;
-	if(!PyArg_ParseTuple(args, "II", &rows, &cols))
+	double value = 0;
+	static char* keywords = {"rows", "cols", "value", NULL};
+	if(!PyArg_ParseTupleAndKeywords(args, keywords, "II|d", &rows, &cols, &value))
 		return NULL;
 	struct CrunumMatrix* crn_matrix = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
 	if(!crn_matrix)
 		return NULL;
-	crn_matrix->matrix = matrix_new(rows, cols);
+	crn_matrix->matrix = matrix_new(rows, cols, (float)value);
 	return crn_matrix;
 }
-
-static struct CrunumMatrix* crn_matrix_init(PyObject* self, PyObject* args){
-	(void)self;
-	uint rows, cols;
-	double value;
-	if(!PyArg_ParseTuple(args, "IId", &rows, &cols, &value))
-		return NULL;
-	struct CrunumMatrix* crn_matrix = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
-	if(!crn_matrix)
-		return NULL;
-	crn_matrix->matrix = matrix_init(rows, cols, (float)value);
-	return crn_matrix;
-}
-
 
 static struct CrunumMatrix* crn_matrix_randinit(PyObject* self, PyObject* args){
 	(void)self;
@@ -78,7 +66,7 @@ static struct CrunumMatrix* crn_matrix_from_list(PyObject* self, PyObject* args)
 	struct CrunumMatrix* crn_matrix = PyObject_New(struct CrunumMatrix, &crn_matrix_type);
 	if(!crn_matrix)
 		return NULL;
-	crn_matrix->matrix = matrix_new(rows, cols);
+	crn_matrix->matrix = matrix_new(rows, cols, 0);
 	for(uint i = 0; i < rows; i++){
 		PyObject* inner_list = PyList_GetItem(outer_list, i);
 		for(uint j = 0; j < cols; j++){
@@ -559,16 +547,10 @@ static PyObject* crn_matrix_compare(PyObject* left, PyObject* right, int op){
 
 PyMethodDef crn_matrix_methods[] = {
 	{"new", (PyCFunction)crn_matrix_new, METH_VARARGS,
-		"Params: rows, cols,\n"
+		"Params: rows, cols, value(optional),\n"
 		"Return: Matrix,\n"
-		"Desc: Create a new matrix\n"
-		"Example: crn.matrix.new(10, 10)"
-	},
-	{"init", (PyCFunction)crn_matrix_init, METH_VARARGS,
-		"Params: rows, cols, value,\n"
-		"Return: Matrix,\n"
-		"Desc: Create a new matrix with default value\n"
-		"Example: crn.matrix.init(3, 4, 2.2)"
+		"Desc: Create a new matrix with initialized value(default=0)\n"
+		"Example: crn.matrix.new(10, 10, value=2.3)"
 	},
 	{"randinit", (PyCFunction)crn_matrix_randinit, METH_VARARGS,
 		"Params: rows, cols,\n"

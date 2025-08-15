@@ -16,20 +16,7 @@ static int l_vector_new(lua_State* lua){
 		return 0;
 	}
 	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
-	*vector = vector_new((uint)len);
-	luaL_getmetatable(lua, "CrunumVector");
-	lua_setmetatable(lua, -2);
-	return 1;
-}
-
-static int l_vector_init(lua_State* lua){
-	int len = luaL_checkinteger(lua, 1);
-	if(len < 0){
-		luaL_error(lua, "Vector length can't be negative");
-		return 0;
-	}
-	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
-	*vector = vector_new((uint)len, (float)luaL_checknumber(lua, 2));
+	*vector = vector_new((uint)len, (float)luaL_optnumber(lua, 2, 0));
 	luaL_getmetatable(lua, "CrunumVector");
 	lua_setmetatable(lua, -2);
 	return 1;
@@ -52,7 +39,7 @@ static int l_vector_from(lua_State* lua){
 	luaL_checktype(lua, 1, LUA_TTABLE);
 	uint len = lua_rawlen(lua, 1);
 	struct Vector** vector = lua_newuserdata(lua, sizeof(struct Vector*));
-	*vector = vector_new(len);
+	*vector = vector_new(len, 0);
 	luaL_getmetatable(lua, "CrunumVector");
 	lua_setmetatable(lua, -2);
 	for(uint i = 0; i < len; i++){

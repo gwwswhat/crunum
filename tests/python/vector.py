@@ -16,11 +16,11 @@ def assert_eq_scalar(vector, scalar):
     assert vector == scalar, f"should be all {scalar}, error={vector}"
 
 def main():
-    vec1 = crn.vector.new(2)
+    vec1 = crn.vector.new(2, value=2.3)
 
     assert vec1.len == 2, f"vec1 length isn't 2, error={vec1.len}"
 
-    assert_eq_scalar(vec1, 0)
+    assert_eq_scalar(vec1, 2.3)
 
     vec1[0] = 2.2
     vec1[1] = 3.3

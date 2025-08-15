@@ -18,18 +18,18 @@ def assert_eq_scalar(matrix, scalar):
     assert matrix == scalar, f"should be all {scalar}, error={matrix}"
 
 def main():
-    mat1 = crn.matrix.new(3, 3)
+    mat1 = crn.matrix.new(3, 3, value=3.3)
 
-    assert_eq_scalar(mat1, 0)
+    assert mat1.rows == 3, f"mat2 row size isn't 3, error={mat2.rows}"
+    assert mat1.cols == 3, f"mat2 col size isn't 3, error={mat2.rows}"
+
+    assert_eq_scalar(mat1, 3.3)
 
     mat1.set(0, 0, 2.2)
     mat1.set(2, 1, 3.4)
     mat1.set(1, 0, 11.55)
 
     assert_eq_list(mat1, [[2.2, 0, 0], [11.55, 0, 0], [0, 3.4, 0]])
-
-    assert mat1.rows == 3, f"mat2 row size isn't 3, error={mat2.rows}"
-    assert mat1.cols == 3, f"mat2 col size isn't 3, error={mat2.rows}"
 
     fibo = crn.matrix.new(2, 2)
 

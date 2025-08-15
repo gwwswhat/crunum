@@ -25,7 +25,7 @@ struct Vector {
 	uint cap;
 };
 
-struct Matrix* matrix_new(uint rows, uint cols);
+struct Matrix* matrix_new(uint rows, uint cols, float value);
 struct Matrix* matrix_randinit(uint rows, uint cols);
 struct Matrix* matrix_identity(uint size);
 void matrix_free(struct Matrix* matrix);
@@ -79,7 +79,7 @@ uint matrix_ge_scalar(struct Matrix* matrix, float scalar);
 uint matrix_lt_scalar(struct Matrix* matrix, float scalar);
 uint matrix_le_scalar(struct Matrix* matrix, float scalar);
 
-struct Vector* vector_new(uint len);
+struct Vector* vector_new(uint len, float value);
 struct Vector* vector_randinit(uint len);
 struct Vector* vector_from_matrix(struct Matrix* matrix);
 void vector_free(struct Vector* vector);
